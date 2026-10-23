@@ -1,0 +1,164 @@
+{% extends "site/base.html" %}
+{% block title %}{{ symbol }} · {{ name }} · PSX Intelligence{% endblock %}
+{% block description %}{{ symbol }} ({{ name }}) technical analysis: every indicator explained in plain language.{% endblock %}
+{% set words = {'strongly_positive': 'Strongly positive', 'leaning_positive': 'Leaning positive', 'mixed': 'Mixed',
+                'leaning_negative': 'Leaning negative', 'strongly_negative': 'Strongly negative', 'insufficient_data': 'Not enough data'} %}
+{% macro tone_cls(t) %}{{ 'tone-pos' if t == 1 else 'tone-neg' if t == -1 else 'tone-neu' if t == 0 else 'tone-desc' }}{% endmacro %}
+{% macro signed_pct(v) %}{% if v is none %}n/a{% else %}{{ '%+.1f'|format(v * 100) }}%{% endif %}{% endmacro %}
+{% set pindex = {} %}{% for p in page_data.parameters %}{% set _ = pindex.update({p.key: p}) %}{% endfor %}
+
+{% block content %}
+<div class="wrap">
+{% if not engine or engine.status != 'ok' %}
+  <section class="hero"><span class="kicker">{{ symbol }}</span><h1 style="margin-top:12px">{{ name }}</h1>
+    <p class="notice warn" style="margin-top:20px">Analysis is not available for {{ symbol }} yet
+      ({{ engine.status if engine else 'no stored data' }}). Load market data from the operations page.</p></section>
+{% else %}
+  {% if engine.data_issues %}
+  <div class="notice warn" role="alert" style="margin-top:22px">
+    <b>Data check:</b> {% for i in engine.data_issues %}on {{ i.date }} the price gapped {{ '%+.1f'|format((i.gap or 0) * 100) }}% while the
+    market did not{{ '; ' if not loop.last else '' }}{% endfor %}. This usually means a bonus issue or split that has not been
+    recorded yet, so indicators spanning that date may be distorted until it is.
+  </div>
+  {% endif %}
+  <section class="stock-head">
+    <div class="card glow reveal">
+      <div class="row between">
+        <span class="kicker">{{ 'Index' if engine.is_index else 'PSX stock' }} · {{ symbol }}{% if sector and not engine.is_index %} · {{ sector }}{% endif %}</span>
+        <span class="tiny muted"><span class="live-dot" aria-hidden="true"></span> session {{ engine.session_date }}</span>
+      </div>
+      <h1 style="margin:12px 0 4px;font-size:clamp(1.8rem,4vw,3rem)">{{ name }}</h1>
+      <div class="row" style="align-items:baseline;gap:16px;margin-top:10px">
+        <div class="big-number" data-count="{{ engine.price.close }}">{{ '{:,.2f}'.format(engine.price.close) }}</div>
+        {% set r1 = engine.price.returns['1d'] %}
+        <span class="chip {{ 'tone-pos' if r1 and r1 > 0 else 'tone-neg' if r1 and r1 < 0 else 'tone-neu' }}">{{ signed_pct(r1) }} today</span>
+      </div>
+      <div class="ret-row">
+        {% for k, lbl in [('5d', '1W'), ('20d', '1M'), ('60d', '3M'), ('250d', '1Y')] %}
+          <div class="ret"><span>{{ lbl }}</span><b class="{{ 'delta-pos' if engine.price.returns[k] and engine.price.returns[k] > 0 else 'delta-neg' }}">{{ signed_pct(engine.price.returns[k]) }}</b></div>
+        {% endfor %}
+      </div>
+      <p class="tiny muted" style="margin:14px 0 0">Prices: {{ engine.price.basis }}. {{ engine.rows }} stored sessions.</p>
+    </div>
+    <div class="card reveal" style="--i:1;text-align:center">
+      <div class="label">Indicator balance</div>
+      <div id="gauge" data-score="{{ engine.balance.score }}" data-label="{{ words[engine.balance.label] }}" style="margin-top:8px"></div>
+      <h3 style="margin-top:-6px">{{ words[engine.balance.label] }} <span class="mono muted">{{ '%+.2f'|format(engine.balance.score) }}</span></h3>
+      <p class="small text-2" style="margin:6px 0 0">{{ engine.balance.positive }} positive · {{ engine.balance.neutral }} neutral · {{ engine.balance.negative }} negative
+        <span class="info" tabindex="0" data-tip="Balance = (positive − negative) ÷ directional readings. Descriptive readings (volatility level, volume level, beta, drawdown, zones) are excluded. It summarises recent behaviour; it is not a forecast.">i</span></p>
+    </div>
+  </section>
+
+  <section class="section grid grid-2" style="margin-top:20px">
+    <div class="card reveal">
+      <div class="panel-title"><h3>What the engine sees</h3><span class="chip tone-desc">{{ engine.engine_version }}</span></div>
+      <ul class="story">{% for s in engine.story %}<li>{{ s }}</li>{% endfor %}</ul>
+    </div>
+    <div class="card reveal" style="--i:1">
+      <div class="panel-title"><h3>Balance by theme</h3></div>
+      {% for g, label in page_data.groups.items() %}{% set b = engine.balance.by_group.get(g) %}
+        {% if b %}
+        <div style="margin:10px 0 14px">
+          <div class="row between small"><span>{{ label }}</span><span class="mono muted">{{ b.positive }}▲ {{ b.neutral }}● {{ b.negative }}▼</span></div>
+          <div class="meter" style="margin:8px 0 0;height:8px" data-score="{{ b.score }}"></div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="chart-h">
+    <div class="card reveal">
+      <div class="toolbar">
+        <h3 id="chart-h">Price, averages &amp; volume</h3>
+        <div class="seg" role="group" aria-label="Time range" id="ranges">
+          <button type="button" data-n="63" aria-pressed="false">3M</button><button type="button" data-n="126" aria-pressed="false">6M</button>
+          <button type="button" data-n="245" aria-pressed="true">1Y</button><button type="button" data-n="0" aria-pressed="false">3Y</button>
+        </div>
+      </div>
+      <div class="row" id="overlays" style="margin-bottom:10px">
+        <button type="button" class="toggle" data-key="sma20" aria-pressed="true"><span class="swatch" style="background:var(--s1)"></span>SMA 20</button>
+        <button type="button" class="toggle" data-key="sma50" aria-pressed="true"><span class="swatch" style="background:var(--s2)"></span>SMA 50</button>
+        <button type="button" class="toggle" data-key="sma200" aria-pressed="true" style="color:var(--s3)"><span class="swatch dashed"></span><span style="color:var(--text-2)">SMA 200</span></button>
+        <button type="button" class="toggle" data-key="bb" aria-pressed="false"><span class="swatch" style="background:#9b7bff"></span>Bollinger Bands</button>
+        <span class="tiny muted">Candles: hollow = closed up, filled = closed down. Drag to pan, scroll to zoom.</span>
+      </div>
+      <div class="chart-box" id="price-chart" role="img" aria-label="{{ symbol }} candlestick chart with moving averages and volume"></div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="lab-h">
+    <div class="section-head"><div><span class="kicker">Indicator lab</span><h2 id="lab-h" style="margin-top:8px">See each indicator work</h2>
+      <p>Pick an indicator: the chart shows its history and the panel explains how to read it and what it says now.</p></div></div>
+    <div class="seg" role="tablist" id="lab-tabs" aria-label="Indicators" style="margin-bottom:14px"></div>
+    <div class="ind-layout">
+      <div class="card"><div class="chart-box sm" id="ind-chart" style="height:320px"></div></div>
+      <div class="card explain" id="ind-explain" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="rd-h">
+    <div class="section-head"><div><span class="kicker">Every reading</span><h2 id="rd-h" style="margin-top:8px">{{ engine.readings|length }} readings, explained</h2>
+      <p>Each card shows the value, its state and the rule that produced it. Open “How it works” for the formula.</p></div></div>
+    {% for g, label in page_data.groups.items() %}{% set rs = engine.readings|selectattr('group', 'equalto', g)|list %}
+      {% if rs %}
+      <div class="group-title"><h3>{{ label }}</h3><span class="bar"></span></div>
+      <div class="grid grid-3">
+        {% for r in rs %}{% set p = pindex[r.key] %}
+          <article class="card hover reading reveal" style="--i:{{ loop.index0 }}" id="r-{{ r.key }}">
+            <div class="row between"><span class="label">{{ r.name }}</span><span class="chip {{ tone_cls(r.tone) }}">{{ r.state|replace('_', ' ') }}</span></div>
+            <div class="val">{{ r.display }}</div>
+            <p class="small text-2" style="margin:0">{{ r.headline }}</p>
+            <details>
+              <summary>How it works</summary>
+              <dl class="explain small">
+                <dt>What it measures</dt><dd>{{ p.what }}</dd>
+                <dt>Settings</dt><dd><code>{{ p.settings }}</code></dd>
+                <dt>Formula</dt><dd><span class="formula">{{ p.formula }}</span></dd>
+                <dt>How to read it</dt><dd>{{ p.how_to_read }}</dd>
+                <dt>Rule used here</dt><dd>{{ r.rule }}</dd>
+                {% if p.caveat %}<dt>Caveat</dt><dd>{{ p.caveat }}</dd>{% endif %}
+              </dl>
+            </details>
+          </article>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endfor %}
+  </section>
+
+  <section class="section grid grid-2" aria-labelledby="lv-h">
+    <div class="card reveal">
+      <div class="panel-title"><h3 id="lv-h">Support &amp; resistance ladder</h3>
+        <span class="info" tabindex="0" data-tip="Zones are clusters of past swing highs/lows within one ATR. Green = support below the price, orange = resistance above. More touches = more established.">i</span></div>
+      <div class="ladder" id="ladder" aria-label="Support and resistance zones relative to the current price"></div>
+      <p class="tiny muted" style="margin-top:10px">Past turning points, not predicted ones.</p>
+    </div>
+    <div class="card reveal" style="--i:1">
+      <div class="panel-title"><h3>52-week range &amp; drawdown</h3></div>
+      {% set rng = engine.readings|selectattr('key', 'equalto', 'range_52w')|first %}
+      {% set dd = engine.readings|selectattr('key', 'equalto', 'drawdown')|first %}
+      {% if rng and rng.value is not none %}
+        <div class="row between small mono"><span>{{ '{:,.2f}'.format(rng.extra.low_52w) }}</span><span>{{ '{:,.2f}'.format(rng.extra.high_52w) }}</span></div>
+        <div class="range-bar"><span class="dot" data-pos="{{ rng.value }}"></span></div>
+        <p class="small text-2">{{ rng.headline }}</p>
+      {% endif %}
+      {% if dd %}<div class="divider"></div><div class="val mono" style="font-size:1.6rem">{{ dd.display }}</div><p class="small text-2">{{ dd.headline }}</p>
+        <div class="chart-box sm" id="dd-chart" role="img" aria-label="Drawdown from peak over time"></div>{% endif %}
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="nw-h">
+    <div class="section-head"><div><span class="kicker">News</span><h2 id="nw-h" style="margin-top:8px">Headlines about {{ name }}</h2>
+      <p>Only headlines that name this company (with Pakistani context) are shown.</p></div>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('site.news', symbol=symbol) }}">Open in news search →</a></div>
+    <div id="stock-news" class="news-list"><div class="skeleton" style="height:70px"></div><div class="skeleton" style="height:70px"></div></div>
+  </section>
+
+  <section class="section"><div class="notice small">{% for c in engine.caveats %}{{ c }} {% endfor %}</div></section>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block vendor %}<script src="{{ asset('vendor/lightweight-charts-4.2.3/lightweight-charts.standalone.production.js') }}"></script>{% endblock %}
+{% block scripts %}<script type="module" src="{{ asset('site/js/stock.js') }}"></script>{% endblock %}

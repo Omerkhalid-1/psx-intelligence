@@ -1,0 +1,28 @@
+# Pinned runtime + test dependencies (Python 3.12).
+# Install: python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.7
+SQLAlchemy==2.0.35
+alembic==1.13.3
+psycopg[binary]==3.2.3
+pydantic==2.9.2
+celery==5.5.3
+# billiard 4.3.x defaults to the "spawn" start method on macOS, which breaks the prefork
+# worker pool (tasks fail with "not enough values to unpack"). 4.2.1 keeps "fork".
+billiard==4.2.1
+redis==5.1.1
+pandas==2.2.3
+numpy==2.1.2
+scikit-learn==1.5.2
+plotly==5.24.1
+PyYAML==6.0.2
+requests==2.32.3
+python-dotenv==1.0.1
+gunicorn==23.0.0
+defusedxml==0.7.1
+joblib==1.4.2
+
+# Development / test
+pytest==8.3.3
+ruff==0.6.9

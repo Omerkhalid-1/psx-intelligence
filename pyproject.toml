@@ -1,0 +1,24 @@
+[project]
+name = "psx-intelligence"
+version = "0.1.0"
+description = "PSX research, forecasting, evaluation and model-learning platform"
+requires-python = ">=3.12,<3.13"
+# Exact pins live in requirements.txt (the reproducible install path).
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "db: requires a reachable PostgreSQL test database (TEST_DATABASE_URL)",
+    "redis: requires a reachable Redis instance",
+    "external: requires external credentials or network feeds (never run by default)",
+]
+filterwarnings = ["error::sqlalchemy.exc.SAWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["migrations"]  # Alembic-generated
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]

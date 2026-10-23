@@ -1,0 +1,12 @@
+{% extends "site/base.html" %}
+{% block title %}Not found · PSX Intelligence{% endblock %}
+{% block content %}
+<section class="hero"><div class="wrap">
+  <span class="kicker">Error 404</span>
+  <h1 style="margin-top:14px">Signal <span class="grad">lost</span>.</h1>
+  <p class="lead">That page doesn't exist. Stock pages are available for the tracked watchlist:
+    {% for s in tracked %}<a class="mono" href="{{ url_for('site.stock', symbol=s) }}">{{ s }}</a>{{ ', ' if not loop.last }}{% endfor %}.
+    For any other PSX company, <a href="{{ url_for('site.news') }}">search its news</a>.</p>
+  <div class="actions" style="margin-top:20px"><a class="btn" href="{{ url_for('site.home') }}">Back to the market pulse</a></div>
+</div></section>
+{% endblock %}

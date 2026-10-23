@@ -1,0 +1,51 @@
+{% macro status_badge(status) -%}
+  {%- set cls = {'ok': 'bg-success', 'succeeded': 'bg-success', 'degraded': 'bg-warning text-dark',
+                 'unknown': 'bg-secondary', 'queued': 'bg-secondary', 'running': 'bg-info text-dark',
+                 'unavailable': 'bg-danger', 'failed': 'bg-danger', 'dispatch_failed': 'bg-danger'} -%}
+  <span class="badge {{ cls.get(status, 'bg-secondary') }}">{{ status }}</span>
+{%- endmacro %}
+
+{% macro dependency_table(checks) %}
+<div class="table-responsive">
+<table class="table table-sm align-middle">
+  <thead><tr><th>Dependency</th><th>Status</th><th>Latency</th><th>Detail</th></tr></thead>
+  <tbody>
+  {% for c in checks %}
+    <tr>
+      <td>{{ c.name }}</td>
+      <td>{{ status_badge(c.status) }}</td>
+      <td>{{ '%.1f ms'|format(c.latency_ms) if c.latency_ms is not none else '—' }}</td>
+      <td class="small text-muted">{{ c.detail or '' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endmacro %}
+
+{% macro freshness_badge(state, label=None) -%}
+  {%- set cls = {'fresh': 'bg-success', 'stale': 'bg-warning text-dark', 'no_data': 'bg-secondary',
+                 'not_configured': 'bg-secondary'} -%}
+  {%- set text = {'fresh': 'fresh', 'stale': 'stale', 'no_data': 'no data', 'not_configured': 'not configured'} -%}
+  <span class="badge {{ cls.get(state, 'bg-secondary') }}">{{ label or 'data' }}: {{ text.get(state, state) }}</span>
+{%- endmacro %}
+
+{% macro num(value) -%}
+  {%- if value is none -%}<span class="value-missing">n/a</span>{%- else -%}{{ '{:,.2f}'.format(value) }}{%- endif -%}
+{%- endmacro %}
+
+{# Changes are shown with an explicit sign and neutral colour: colour must not imply an outcome. #}
+{% macro signed(value, fmt='{:,.2f}', suffix='') -%}
+  {%- if value is none -%}<span class="value-missing">n/a</span>
+  {%- else -%}{{ '+' if value > 0 else '' }}{{ fmt.format(value) }}{{ suffix }}{%- endif -%}
+{%- endmacro %}
+
+{% macro pct(value, nd=1, signed=False) -%}
+  {%- if value is none -%}<span class="value-missing">n/a</span>
+  {%- else -%}{{ ('+' if signed and value > 0 else '') }}{{ ('{:.' ~ nd ~ 'f}').format(value * 100) }}%{%- endif -%}
+{%- endmacro %}
+
+{# Accessible explanation popover/tooltip (text only; no HTML). #}
+{% macro info(text) -%}
+  <span class="info-tip" tabindex="0" role="note" aria-label="{{ text }}" title="{{ text }}">ⓘ</span>
+{%- endmacro %}

@@ -1,0 +1,32 @@
+{% extends "site/base.html" %}
+{% block title %}PSX news search · PSX Intelligence{% endblock %}
+{% block description %}Search Pakistan Stock Exchange news by symbol: only headlines about that company.{% endblock %}
+{% block content %}
+<section class="hero"><div class="wrap">
+  <span class="kicker reveal">PSX news radar</span>
+  <h1 class="reveal" style="--i:1">One symbol in.<br><span class="grad">Only its news</span> out.</h1>
+  <p class="lead reveal" style="--i:2">{% if static_mode %}Pick a tracked symbol or type a company name.{% else %}Type any PSX symbol or company name.{% endif %}
+    Results are headlines that name that company, with Pakistani context, from the last 90 days. Unrelated stories, quote
+    pages and look-alike company names are filtered out.{% if static_mode %} This static edition carries pre-built news for
+    the tracked watchlist; the server edition searches every listed company live.{% endif %}</p>
+  <form class="search-xl reveal" style="--i:3;margin-top:26px" id="news-form" role="search" autocomplete="off">
+    <label class="visually-hidden" for="news-q">PSX symbol</label>
+    <span class="icon" aria-hidden="true">⌕</span>
+    <input id="news-q" name="symbol" maxlength="40" spellcheck="false" placeholder="Symbol or company, e.g. LUCK, OGDC, Meezan" value="{{ page_data.symbol }}"
+           role="combobox" aria-expanded="false" aria-controls="news-suggest" aria-autocomplete="list">
+    <button class="btn" type="submit">Search</button>
+    <div class="suggest" id="news-suggest" role="listbox" hidden></div>
+  </form>
+  <div class="quick reveal" style="--i:4" aria-label="Quick picks">
+    {% set extra = [] if static_mode else ['ENGROH', 'POL', 'MTL', 'SEARL'] %}
+    {% for s in (tracked|reject('equalto', 'KSE100')|list)[:(19 if static_mode else 10)] + extra %}<button type="button" data-q="{{ s }}">{{ s }}</button>{% endfor %}
+    <button type="button" data-q="KSE100">Market (KSE-100)</button>
+  </div>
+</div></section>
+
+<section class="wrap section" style="margin-top:28px" aria-live="polite">
+  <div id="news-head"></div>
+  <div id="news-results" class="news-list"></div>
+</section>
+{% endblock %}
+{% block scripts %}<script type="module" src="{{ asset('site/js/news.js') }}"></script>{% endblock %}

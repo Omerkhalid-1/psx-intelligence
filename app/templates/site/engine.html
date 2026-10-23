@@ -1,0 +1,76 @@
+{% extends "site/base.html" %}
+{% block title %}Analysis engine & parameters · PSX Intelligence{% endblock %}
+{% block description %}How the PSX Intelligence analysis engine computes and checks every indicator, with the full parameter guide.{% endblock %}
+{% block content %}
+<section class="hero"><div class="wrap">
+  <span class="kicker reveal">Analysis engine · {{ engine_version }}</span>
+  <h1 class="reveal" style="--i:1">Trust, but <span class="grad">verify</span>.</h1>
+  <p class="lead reveal" style="--i:2">The engine turns stored, split/bonus-adjusted PSX prices into {{ parameters|length }} explained readings.
+    Below, it checks itself against today's live data, then lists every parameter it uses.</p>
+</div></section>
+
+<div class="wrap">
+  <section class="grid diag-grid" id="diag">
+    <div class="card glow reveal" style="text-align:center">
+      <div class="label">Self-check status</div>
+      <svg class="ring" viewBox="0 0 150 150" style="margin:14px auto" aria-hidden="true">
+        <circle class="bg" cx="75" cy="75" r="62"></circle>
+        <circle class="fg" id="ring-fg" cx="75" cy="75" r="62" stroke="#46d9ff" stroke-dasharray="389.6" stroke-dashoffset="389.6"></circle>
+        <text x="75" y="72" text-anchor="middle" fill="#eaf0ff" font-size="26" font-family="JetBrains Mono" id="ring-num">…</text>
+        <text x="75" y="94" text-anchor="middle" fill="#8691b6" font-size="11" font-family="JetBrains Mono" id="ring-sub">running</text>
+      </svg>
+      <div class="row" style="justify-content:center" id="diag-counts"></div>
+      <p class="tiny muted" id="diag-meta" style="margin-top:12px"></p>
+      <button class="btn btn-ghost btn-sm" type="button" id="diag-rerun">Re-check</button>
+    </div>
+    <div class="card reveal" style="--i:1">
+      <div class="panel-title"><h3>What is checked</h3><span class="tiny muted">results cached for 5 minutes</span></div>
+      <dl class="explain small" style="margin:0">
+        <dt>Reference</dt><dd>Wilder RSI reproduces the published StockCharts example table to within 0.05.</dd>
+        <dt>Identities</dt><dd>MACD histogram = MACD − signal; Bollinger middle band = 20-day SMA; every OBV step equals that day's volume.</dd>
+        <dt>Bounds</dt><dd>RSI, stochastic, ADX and DI stay within 0–100; ATR and band width never go negative.</dd>
+        <dt>No look-ahead</dt><dd>Removing the latest 20 sessions leaves every earlier indicator value unchanged — no reading uses future data.</dd>
+        <dt>Determinism</dt><dd>Two evaluations give identical output, and the balance counts add up.</dd>
+        <dt>Data</dt><dd>Enough history, consistent OHLC bars (known provider anomalies are flagged at ingestion), fresh latest session.</dd>
+      </dl>
+    </div>
+  </section>
+  <section class="section" style="margin-top:22px"><div class="card reveal"><div class="panel-title"><h3>Check results</h3></div><div id="diag-list"><div class="skeleton" style="height:120px"></div></div></div></section>
+
+  <section class="section" id="parameters" aria-labelledby="pg-h">
+    <div class="section-head"><div><span class="kicker">Parameter guide</span><h2 id="pg-h" style="margin-top:8px">Every parameter, in plain language</h2>
+      <p>Settings, formula, how to read it and the exact rule behind each colour. Thresholds are fixed conventions, not optimised trading rules.</p></div></div>
+    <div class="filter-row" id="pg-filter" role="group" aria-label="Filter by theme">
+      <button class="toggle" type="button" data-g="all" aria-pressed="true">All</button>
+      {% for g, label in groups.items() %}<button class="toggle" type="button" data-g="{{ g }}" aria-pressed="false">{{ label }}</button>{% endfor %}
+    </div>
+    <div class="grid grid-2">
+      {% for p in parameters %}
+        <article class="card hover param reveal" style="--i:{{ loop.index0 % 4 }}" id="p-{{ p.key }}" data-g="{{ p.group }}">
+          <div class="row between"><span class="label">{{ p.group_label }}</span><span class="settings">{{ p.settings }}</span></div>
+          <h3 style="margin:8px 0 6px">{{ p.name }}</h3>
+          <p class="text-2 small" style="margin:0">{{ p.what }}</p>
+          <dl class="explain small">
+            <dt>Formula</dt><dd><span class="formula">{{ p.formula }}</span></dd>
+            <dt>How to read it</dt><dd>{{ p.how_to_read }}</dd>
+            <dt>Rule used for its colour</dt><dd>{{ p.rule }}</dd>
+            {% if p.caveat %}<dt>Caveat</dt><dd>{{ p.caveat }}</dd>{% endif %}
+          </dl>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="section"><div class="card reveal">
+    <h3>Methodology notes</h3>
+    <ul class="story" style="margin-top:8px">
+      <li>Prices come from stored daily bars (self-hosted psxdata-api). Splits and bonus issues are adjusted using cited corporate actions; cash dividends are not.</li>
+      <li>A few provider bars have a high/low that does not contain the open/close. They are flagged at ingestion, and the engine widens their range to contain the body.</li>
+      <li>All indicators are causal: a value for a session uses only that session and earlier ones (verified above).</li>
+      <li>The indicator balance counts directional readings only; descriptive readings (volatility level, volume level, beta, drawdown, zones) carry no direction.</li>
+      <li>Walk-forward tests in this project found no forecasting skill over a no-change baseline for models built on these indicators. Readings describe; they do not predict.</li>
+    </ul>
+  </div></section>
+</div>
+{% endblock %}
+{% block scripts %}<script type="module" src="{{ asset('site/js/engine.js') }}"></script>{% endblock %}

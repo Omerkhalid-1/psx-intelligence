@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}PSX Intelligence{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-expand-md navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">PSX Intelligence <span class="small text-secondary">ops</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"
+            aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav me-auto">
+        {% set nav = [('dashboard.index', 'Market overview'), ('dashboard.models_page', 'Forecasts & models'),
+                      ('dashboard.system', 'System health')] %}
+        {% for endpoint, label in nav %}
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == endpoint %}active{% endif %}"
+               href="{{ url_for(endpoint) }}">{{ label }}</a>
+          </li>
+        {% endfor %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if request.endpoint == 'dashboard.stock_page' %}active{% endif %}"
+             href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Stock research</a>
+          <ul class="dropdown-menu">
+            {% for s in config.PSXDATA_SYMBOLS %}
+              <li><a class="dropdown-item" href="{{ url_for('dashboard.stock_page', symbol=s) }}">{{ s }}</a></li>
+            {% endfor %}
+          </ul>
+        </li>
+      </ul>
+      <a class="btn btn-sm btn-outline-light me-2" href="{{ url_for('site.home') }}">Open website</a>
+      <span class="navbar-text small">env: {{ config.ENV_NAME }}</span>
+    </div>
+  </div>
+</nav>
+<div id="refresh-bar" class="refresh-bar border-bottom bg-white">
+  <div class="container-fluid py-2 d-flex flex-wrap align-items-center gap-2 small">
+    <span data-refresh-status class="badge text-bg-secondary">Checking…</span>
+    <span data-refresh-detail class="text-muted flex-grow-1" aria-live="polite"></span>
+    <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse"
+            data-bs-target="#refresh-form" aria-expanded="false" aria-controls="refresh-form">Refresh latest data</button>
+  </div>
+  <div class="collapse" id="refresh-form">
+    <form class="container-fluid pb-2 d-flex flex-wrap align-items-center gap-2 small" autocomplete="off">
+      <label class="visually-hidden" for="refresh-token">Admin token</label>
+      <input id="refresh-token" type="password" class="form-control form-control-sm" style="max-width:280px"
+             placeholder="Admin token (ADMIN_API_TOKEN)" required>
+      <div class="form-check mb-0">
+        <input class="form-check-input" type="checkbox" id="refresh-remember">
+        <label class="form-check-label" for="refresh-remember">Remember in this tab</label>
+      </div>
+      <button type="submit" class="btn btn-sm btn-primary" data-refresh-start>Start refresh</button>
+      <span class="text-muted">Fetches live quotes, new daily bars and news; recomputes analysis and forecasts only
+        if a new market session is available. Runs in the background worker.</span>
+    </form>
+  </div>
+</div>
+<main class="container-fluid py-3">
+  {% block content %}{% endblock %}
+</main>
+<footer class="container-fluid pb-3 small text-muted">
+  Research tool only. Forecasts are model estimates with uncertainty, not investment advice or guaranteed outcomes.
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/refresh.js') }}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

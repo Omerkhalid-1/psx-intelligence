@@ -1,0 +1,7 @@
+body { background: #f6f7f9; }
+.card { border-radius: .5rem; }
+code { word-break: break-all; }
+.value-missing { color: #6c757d; font-style: italic; }
+.price-chart { min-height: 220px; }
+.info-tip { cursor: help; color: #6c757d; font-size: .85em; margin-left: .25rem; }
+.info-tip:focus { outline: 1px dotted #6c757d; }

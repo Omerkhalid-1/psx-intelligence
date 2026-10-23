@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% from "dashboard/_macros.html" import num, signed, pct, info %}
+{% block title %}{{ symbol }} research · PSX Intelligence{% endblock %}
+{% block content %}
+{% set a = analysis %}
+<div class="d-flex flex-wrap align-items-baseline gap-3 mb-2">
+  <h1 class="h3 mb-0">{{ symbol }}</h1>
+  {% if a.status == 'ok' %}
+    <span class="text-muted">Session {{ a.session_date }} · close {{ num(a.raw_close) }}
+      <span class="small">(adjusted basis {{ num(a.close) }})</span></span>
+    <span class="badge text-bg-light border">trend: {{ a.trend.classification|replace('_',' ') }}</span>
+    <span class="badge text-bg-light border">volatility: {{ a.risk.volatility_regime or 'n/a' }}</span>
+  {% endif %}
+  <span class="small text-muted ms-auto">analysis {{ a.method_version }} · {{ a.source|replace('_',' ') }}</span>
+</div>
+<p class="small text-muted">{{ a.price_basis }}. Indicators and zones describe the past; they are not predictions.</p>
+
+{% if a.status != 'ok' %}
+  <div class="alert alert-secondary">Insufficient history for analysis ({{ a.rows }} sessions).</div>
+{% else %}
+
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between"><span>Price, volume, moving averages, support/resistance zones</span>
+    {{ info("Candles use split/bonus-adjusted OHLC. Shaded bands are estimated support (below price) and resistance (above) zones from clustered swing points over the last 250 sessions (tolerance 1×ATR). Dotted lines mark recorded corporate actions.") }}</div>
+  <div class="card-body"><div id="price-chart" style="height:520px" role="img" aria-label="{{ symbol }} candlestick chart"></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-4"><div class="card h-100"><div class="card-header">RSI (14) {{ info("Wilder RSI. 70/30 lines are conventional reference levels, not validated signals (see Forecasts & models › signal studies).") }}</div>
+    <div class="card-body"><div id="rsi-chart" style="height:220px"></div></div></div></div>
+  <div class="col-lg-4"><div class="card h-100"><div class="card-header">MACD (12, 26, 9)</div>
+    <div class="card-body"><div id="macd-chart" style="height:220px"></div></div></div></div>
+  <div class="col-lg-4"><div class="card h-100"><div class="card-header">
+    {% if symbol == 'KSE100' %}Drawdown from peak{% else %}Relative strength vs KSE100{% endif %}
+    {{ info("Relative strength = (stock / KSE100) rebased to 1 at the start of the window; rising means outperforming the index.") }}</div>
+    <div class="card-body"><div id="rel-chart" style="height:220px"></div></div></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-6">
+    <div class="card h-100"><div class="card-header">Technical summary</div><div class="card-body">
+      <table class="table table-sm mb-0">
+        <tr><th>Trend</th><td>{{ a.trend.classification|replace('_',' ') }} · SMA50 10-session slope {{ pct(a.trend.sma50_slope_10d, 2) }}
+          · swing structure: {{ a.trend.swing_structure|replace('_',' ') }}</td></tr>
+        <tr><th>Price vs MAs</th><td>{% for n, v in a.trend.above_sma.items() %}SMA{{ n }} {{ 'above' if v else 'below' if v is not none else 'n/a' }}{{ ' · ' if not loop.last }}{% endfor %}</td></tr>
+        <tr><th>Momentum</th><td>RSI {{ a.momentum.rsi14 }} ({{ a.momentum.rsi_state|replace('_',' ') }}) · MACD hist {{ a.momentum.macd_hist }} · {{ a.momentum.breakout|replace('_',' ') }}</td></tr>
+        <tr><th>Returns</th><td>{% for k, v in a.momentum.returns.items() %}{{ k }} {{ pct(v) }}{{ ' · ' if not loop.last }}{% endfor %}</td></tr>
+        <tr><th>Volatility</th><td>20d {{ pct(a.risk.vol20) }} · 60d {{ pct(a.risk.vol60) }} (annualised) · ATR14 {{ num(a.risk.atr14) }} ({{ pct(a.risk.atr14_pct) }})</td></tr>
+        <tr><th>Drawdown</th><td>from peak {{ pct(a.risk.drawdown_from_peak) }} · max 1y {{ pct(a.risk.max_drawdown_1y) }} · downside vol 60d {{ pct(a.risk.downside_vol60) }}</td></tr>
+        <tr><th>Volume</th><td>relative to 20d avg {{ a.volume.rel_volume20 }}× {% if a.volume.unusual_activity %}<span class="badge text-bg-light border">unusual activity</span>{% endif %}</td></tr>
+        {% if a.relative %}<tr><th>vs KSE100</th><td>60d excess {{ pct(a.relative.excess_return_60d) }} · beta {{ a.relative.beta_120 }} · corr {{ a.relative.corr_120 }}</td></tr>{% endif %}
+        <tr><th>Zones</th><td>
+          support: {% for z in a.zones.support %}{{ num(z.low) }}–{{ num(z.high) }} ({{ z.touches }}×){{ ', ' if not loop.last }}{% else %}none found{% endfor %}<br>
+          resistance: {% for z in a.zones.resistance %}{{ num(z.low) }}–{{ num(z.high) }} ({{ z.touches }}×){{ ', ' if not loop.last }}{% else %}none found{% endfor %}</td></tr>
+      </table>
+    </div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100"><div class="card-header">Research interpretation {{ info("Generated from the computed values shown on this page; no language model is used and no value is invented.") }}</div><div class="card-body small">
+      <p class="mb-1"><strong>Supporting the {{ a.trend.classification|replace('_',' ') }}:</strong></p>
+      <ul>{% for o in a.observations.supporting_trend %}<li>{{ o }}</li>{% else %}<li class="text-muted">none</li>{% endfor %}</ul>
+      <p class="mb-1"><strong>Contradicting:</strong></p>
+      <ul>{% for o in a.observations.contradicting_trend %}<li>{{ o }}</li>{% else %}<li class="text-muted">none</li>{% endfor %}</ul>
+      <p class="mb-1"><strong>Risks:</strong></p>
+      <ul>
+        <li>Volatility regime {{ a.risk.volatility_regime or 'n/a' }}; a 1-ATR move is about {{ pct(a.risk.atr14_pct) }} of price per session.</li>
+        <li>Drawdown from peak {{ pct(a.risk.drawdown_from_peak) }}.</li>
+        <li>Forecast models have not shown out-of-sample skill over a no-change forecast (see below).</li>
+      </ul>
+      <p class="mb-1"><strong>Data limitations:</strong></p>
+      <ul>{% for c in a.caveats %}<li>{{ c }}</li>{% endfor %}</ul>
+    </div></div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between"><span>Forecasts {% if forecasts.origin_date %}<span class="text-muted small">· origin session {{ forecasts.origin_date }}</span>{% endif %}</span>
+    {{ info("Return forecasts for the next 1, 5 and 20 sessions from approved models. The 90% range uses volatility-scaled residual quantiles from out-of-sample tests. 'Reliability' shows the model's walk-forward holdout record. Implied price = origin close × (1 + return).") }}</div>
+  <div class="card-body">
+    {% if not forecasts.by_horizon %}
+      <div class="alert alert-secondary mb-0">No forecasts stored yet. They are generated by the daily research pipeline after models are approved.</div>
+    {% else %}
+    <div class="table-responsive"><table class="table table-sm align-middle">
+      <thead><tr><th>Horizon</th><th>Model</th><th class="text-end">Expected return</th><th class="text-end">Implied price</th>
+        <th class="text-end">90% range (price)</th><th>Range status</th><th>P(up)</th><th>Holdout record</th></tr></thead>
+      <tbody>
+      {% for row in forecast_rows %}
+          {% set f = row.f %}{% set rel = f.reliability.holdout or {} %}{% set key = row.key %}
+          <tr class="{{ 'table-light' if row.is_primary else '' }}">
+            <td>{{ row.horizon }} session{{ 's' if row.horizon != 1 }}</td>
+            <td>{{ key }}{% if row.is_primary %} <span class="badge text-bg-secondary">primary</span>{% endif %}</td>
+            <td class="text-end font-monospace">{{ pct(f.predicted_return, 2, signed=True) }}</td>
+            <td class="text-end font-monospace">{{ f.implied_price }}</td>
+            <td class="text-end font-monospace">{% if f.price_range %}{{ f.price_range[0] }} – {{ f.price_range[1] }}{% else %}<span class="value-missing">n/a</span>{% endif %}</td>
+            <td class="small">{{ f.interval_status|replace('_',' ') }}</td>
+            <td class="small">{% if f.prob_status == 'calibrated' %}{{ pct(f.prob_up) }}{% else %}<span class="text-muted" title="not shown: {{ f.prob_status|replace('_',' ') }}">not calibrated</span>{% endif %}</td>
+            <td class="small">{% if rel %}MSE skill {{ rel.mse_skill_vs_zero }} · DM p {{ rel.dm_pvalue_vs_zero }} · n {{ rel.n }}{% else %}—{% endif %}</td>
+          </tr>
+      {% endfor %}
+      </tbody></table></div>
+    <p class="small text-muted mb-0">Primary model per horizon is chosen by a pre-registered rule on validation data; when no model
+      significantly beats the no-change forecast, "zero" (no change) is primary and its range shows typical variation, not a forecast edge.
+      MSE skill &gt; 0 means lower error than no-change; DM p is the Diebold–Mariano test p-value.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-7"><div class="card h-100"><div class="card-header">Out-of-sample 1-session forecasts vs actual (walk-forward, equal-weight ensemble)
+    {{ info("Each point was predicted using only data available before that session (walk-forward). Band = 90% interval. Validation and holdout periods are labelled.") }}</div>
+    <div class="card-body">{% if backtest %}<div id="bt-chart" style="height:260px"></div>{% else %}<p class="text-muted mb-0">No walk-forward results stored.</p>{% endif %}</div></div></div>
+  <div class="col-lg-5"><div class="card h-100"><div class="card-header">Live forecast record (ensemble)</div><div class="card-body small">
+    {% set any_hist = false %}
+    <table class="table table-sm mb-0"><thead><tr><th>Origin</th><th>h</th><th class="text-end">Pred.</th><th class="text-end">Actual</th><th>In range</th></tr></thead><tbody>
+    {% for h, rows in history.items() %}{% for f in rows[-6:]|reverse %}
+      <tr><td>{{ f.origin_date }}</td><td>{{ h }}</td><td class="text-end">{{ pct(f.predicted_return, 2, signed=True) }}</td>
+        <td class="text-end">{% if f.outcome and f.outcome.status == 'evaluated' %}{{ pct(f.outcome.actual_return, 2, signed=True) }}{% elif f.outcome %}<span class="text-muted">invalid</span>{% else %}<span class="text-muted">pending</span>{% endif %}</td>
+        <td>{% if f.outcome and f.outcome.in_interval is not none %}{{ 'yes' if f.outcome.in_interval else 'no' }}{% else %}—{% endif %}</td></tr>
+    {% endfor %}{% else %}<tr><td colspan="5" class="text-muted">No live forecasts yet.</td></tr>{% endfor %}
+    </tbody></table>
+    <p class="text-muted mb-0 mt-1">Pending forecasts are never shown as evaluated.</p>
+  </div></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-7"><div class="card h-100"><div class="card-header">News {% if news_key == 'MARKET' %}(market-wide){% endif %} · {{ news_total }} relevant headlines
+    {{ info("Discovered via Google News RSS (headlines only; links are provider redirects). Sentiment = FinBERT tone of the headline toward the company, not an estimate of price impact. Near-identical syndicated headlines share a cluster and count once in aggregates.") }}</div>
+    <div class="card-body small" style="max-height:520px;overflow:auto">
+      {% for n in news %}
+        <div class="border-bottom py-2">
+          <div><a href="{{ n.url }}" rel="noopener noreferrer nofollow" target="_blank">{{ n.title }}</a></div>
+          <div class="text-muted">{{ n.publisher or n.publisher_domain or 'unknown publisher' }} ·
+            {{ n.published_at[:10] if n.published_at else 'date unknown' }}{% if n.published_precision == 'date_only' %} (date only){% endif %}
+            · {{ n.event_category|replace('_',' ') }}
+            · tone: <strong>{{ n.sentiment_label or 'not scored' }}</strong>{% if n.sentiment_score is not none %} ({{ '%+.2f'|format(n.sentiment_score) }}){% endif %}
+            {% if not n.is_cluster_lead %}· <span title="near-duplicate of an earlier headline">syndicated</span>{% endif %}</div>
+        </div>
+      {% else %}<p class="text-muted">No relevant headlines found.</p>{% endfor %}
+    </div></div></div>
+  <div class="col-lg-5"><div class="card h-100"><div class="card-header">Headline sentiment, 7-day window
+    {{ info("Deduplicated mean of headline sentiment scores (-1..+1) over the 7 days available before each session's 18:00 PKT cutoff. Gaps = insufficient evidence (no relevant event), not neutral.") }}</div>
+    <div class="card-body">{% if sentiment %}<div id="sent-chart" style="height:300px"></div>{% else %}<p class="text-muted mb-0">No sentiment aggregates.</p>{% endif %}</div></div></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-finance-dist-min@2.35.2/plotly-finance.min.js"></script>
+<script>
+const S = {{ series|tojson }};
+const ZONES = {{ (analysis.zones if analysis.status == 'ok' else {'support': [], 'resistance': []})|tojson }};
+const BT = {{ backtest|tojson }};
+const SENT = {{ sentiment|tojson }};
+const d = S.dates, s = S.series;
+const cfg = {displayModeBar: false, responsive: true};
+const grey = "#6c757d", blue = "#3b5b92";
+const lastDate = d[d.length - 1], firstDate = d[0];
+const shapes = [];
+for (const z of ZONES.support) shapes.push({type: "rect", xref: "x", yref: "y", x0: firstDate, x1: lastDate, y0: z.low, y1: z.high, fillcolor: "rgba(59,91,146,0.10)", line: {width: 0}});
+for (const z of ZONES.resistance) shapes.push({type: "rect", xref: "x", yref: "y", x0: firstDate, x1: lastDate, y0: z.low, y1: z.high, fillcolor: "rgba(108,117,125,0.14)", line: {width: 0}});
+for (const a of S.actions) if (a.ex_date >= firstDate) shapes.push({type: "line", xref: "x", yref: "paper", x0: a.ex_date, x1: a.ex_date, y0: 0, y1: 1, line: {dash: "dot", width: 1, color: grey}});
+const traces = [
+  {type: "candlestick", x: d, open: s.open, high: s.high, low: s.low, close: s.close, name: "{{ symbol }}",
+   increasing: {line: {color: "#2f6f4f"}}, decreasing: {line: {color: "#9a3b3b"}}, yaxis: "y"},
+  {type: "scatter", mode: "lines", x: d, y: s.sma20, name: "SMA20", line: {width: 1, color: "#d08c2c"}},
+  {type: "scatter", mode: "lines", x: d, y: s.sma50, name: "SMA50", line: {width: 1, color: blue}},
+  {type: "scatter", mode: "lines", x: d, y: s.sma200, name: "SMA200", line: {width: 1.2, color: "#333"}},
+  {type: "bar", x: d, y: s.volume, name: "Volume", yaxis: "y2", marker: {color: "rgba(108,117,125,0.45)"}},
+];
+Plotly.newPlot("price-chart", traces, {
+  margin: {l: 55, r: 10, t: 10, b: 30}, showlegend: true, legend: {orientation: "h", y: 1.02},
+  xaxis: {type: "date", rangeslider: {visible: false}, rangeselector: {buttons: [
+    {count: 3, label: "3M", step: "month", stepmode: "backward"}, {count: 6, label: "6M", step: "month", stepmode: "backward"},
+    {count: 1, label: "1Y", step: "year", stepmode: "backward"}, {step: "all", label: "3Y"}]}, range: [d[Math.max(0, d.length - 250)], lastDate]},
+  yaxis: {domain: [0.25, 1], title: "Price (adjusted)"}, yaxis2: {domain: [0, 0.2], title: "Volume"}, shapes,
+}, cfg);
+Plotly.newPlot("rsi-chart", [{x: d, y: s.rsi14, mode: "lines", line: {color: blue, width: 1}, name: "RSI"}], {
+  margin: {l: 35, r: 10, t: 5, b: 25}, yaxis: {range: [0, 100]}, xaxis: {range: [d[Math.max(0, d.length - 250)], lastDate]},
+  shapes: [30, 70].map(v => ({type: "line", xref: "paper", x0: 0, x1: 1, y0: v, y1: v, line: {dash: "dot", color: grey, width: 1}}))}, cfg);
+Plotly.newPlot("macd-chart", [
+  {x: d, y: s.hist, type: "bar", name: "hist", marker: {color: "rgba(108,117,125,0.5)"}},
+  {x: d, y: s.macd, mode: "lines", name: "MACD", line: {color: blue, width: 1}},
+  {x: d, y: s.signal, mode: "lines", name: "signal", line: {color: "#d08c2c", width: 1}}],
+  {margin: {l: 40, r: 10, t: 5, b: 25}, showlegend: false, xaxis: {range: [d[Math.max(0, d.length - 250)], lastDate]}}, cfg);
+{% if symbol == 'KSE100' %}
+Plotly.newPlot("rel-chart", [{x: d, y: s.drawdown.map(v => v === null ? null : v * 100), mode: "lines", fill: "tozeroy", line: {color: grey, width: 1}}],
+  {margin: {l: 40, r: 10, t: 5, b: 25}, yaxis: {ticksuffix: "%"}}, cfg);
+{% else %}
+Plotly.newPlot("rel-chart", [{x: d, y: s.rs_ratio, mode: "lines", line: {color: blue, width: 1}, name: "RS"}],
+  {margin: {l: 40, r: 10, t: 5, b: 25}}, cfg);
+{% endif %}
+if (BT.length) {
+  const x = BT.map(r => r.date);
+  Plotly.newPlot("bt-chart", [
+    {x, y: BT.map(r => r.upper * 100), mode: "lines", line: {width: 0}, showlegend: false, hoverinfo: "skip"},
+    {x, y: BT.map(r => r.lower * 100), mode: "lines", fill: "tonexty", fillcolor: "rgba(59,91,146,0.12)", line: {width: 0}, name: "90% interval"},
+    {x, y: BT.map(r => r.actual * 100), mode: "markers", marker: {size: 4, color: grey}, name: "actual"},
+    {x, y: BT.map(r => r.pred * 100), mode: "lines", line: {color: blue, width: 1.5}, name: "predicted"}],
+    {margin: {l: 40, r: 10, t: 5, b: 25}, yaxis: {ticksuffix: "%"}, legend: {orientation: "h"},
+     shapes: [{type: "line", xref: "x", yref: "paper", x0: "{{ '2024-01-01' }}", x1: "{{ '2024-01-01' }}", y0: 0, y1: 1, line: {dash: "dash", color: grey, width: 1}}],
+     annotations: [{x: "2024-01-01", y: 1, yref: "paper", text: "holdout →", showarrow: false, xanchor: "left", font: {size: 10}}]}, cfg);
+}
+if (SENT.length) {
+  Plotly.newPlot("sent-chart", [
+    {x: SENT.map(r => r.date), y: SENT.map(r => r.score), type: "bar", name: "7d score", marker: {color: SENT.map(r => r.score === null ? "rgba(0,0,0,0)" : (r.score >= 0 ? "rgba(59,91,146,0.6)" : "rgba(108,117,125,0.6)"))}},
+    {x: SENT.map(r => r.date), y: SENT.map(r => r.n_events), yaxis: "y2", mode: "lines", line: {width: 1, color: "#d08c2c"}, name: "events"}],
+    {margin: {l: 40, r: 40, t: 5, b: 25}, yaxis: {range: [-1, 1], title: "score"}, yaxis2: {overlaying: "y", side: "right", title: "events", rangemode: "tozero"},
+     legend: {orientation: "h"}}, cfg);
+}
+</script>
+{% endblock %}

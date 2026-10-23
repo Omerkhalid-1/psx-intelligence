@@ -1,0 +1,234 @@
+# Corporate actions that change share count (bonus issues, splits) for tracked symbols.
+#
+# This is curated reference data, NOT inferred from prices. Every entry must cite a public source
+# for the ratio. `share_multiplier` = shares held after / shares held before (10% bonus -> 1.10,
+# 800% bonus -> 9, 5-for-1 split -> 5). Historical prices before `ex_date` are divided by the
+# multiplier to make them comparable with later prices (split/bonus adjustment only; cash dividends
+# are recorded for reference and are NOT applied: targets are price returns, not total returns).
+#
+# ex_date: first session trading without entitlement. PSX did not publish a machine-readable
+# ex-date in the cited sources, so ex_date is the session on which the price discontinuity occurs,
+# checked to fall 1-3 sessions before the cited book-closure start (T+2 settlement). The loader
+# re-verifies each entry against the stored price series (see `verify_against_prices`).
+#
+# status: verified = ratio from a cited source and ex_date consistent with book closure + prices.
+# Reviewed by: Claude (AI) from public web sources on 2026-10-13. Needs human confirmation
+# against the official PSX notices before being relied on for anything beyond research.
+
+actions:
+  - symbol: SYS
+    ex_date: 2019-04-18
+    action_type: bonus
+    share_multiplier: "1.10"
+    cash_dividend_per_share: "2.00"
+    status: verified
+    evidence: "CY2018: 20% cash dividend + 10% bonus; book closure 20-26 Apr 2019. Price gap 106.07 -> 95.00 matches (106.07-2)/1.1 = 94.6."
+    sources:
+      - https://propakistani.pk/2019/04/01/system-limited-reports-another-profitable-year-in-2018/amp/
+      - https://www.systemsltd.com/sites/default/files/2023-10/Invest%20brief%20HY%202020.pdf
+
+  - symbol: SYS
+    ex_date: 2022-03-31
+    action_type: bonus
+    share_multiplier: "2.00"
+    cash_dividend_per_share: "5.00"
+    status: verified
+    evidence: "CY2021: 50% cash dividend + 100% bonus announced 10 Mar 2022; book closure 4-11 Apr 2022. Gap 717.72 -> 380.00 (ratio 1.89; +6.6% move on the day, within the 7.5% limit)."
+    sources:
+      - https://dps.psx.com.pk/company/SYS
+
+  - symbol: SYS
+    ex_date: 2025-06-02
+    action_type: split
+    share_multiplier: "5"
+    status: verified
+    evidence: "Face value Rs10 -> Rs2 (5-for-1); trading suspended 29-30 May 2025, resumed 2 Jun 2025; book closure 31 May 2025. Open 108.82 = 544.10 / 5 exactly."
+    sources:
+      - https://propakistani.pk/2025/03/25/systems-limited-to-undergo-5-for-1-stock-split-to-enhance-liquidity/amp/
+      - https://digitalpakistan.pk/psx-temporarily-suspends-trading-in-systems-limited/
+
+  - symbol: MEBL
+    ex_date: 2018-09-18
+    action_type: bonus
+    share_multiplier: "1.10"
+    cash_dividend_per_share: "1.50"
+    status: verified
+    evidence: "H1 2018: interim cash Rs1.50 + 10% bonus. Gap 93.00 -> 86.95."
+    sources:
+      - https://meezanbank.com/?p=26699
+      - https://profit.pakistantoday.com.pk/2018/09/06/meezan-bank-announces-30pc-growth-in-half-year-financial-results
+
+  - symbol: MEBL
+    ex_date: 2019-05-14
+    action_type: bonus
+    share_multiplier: "1.10"
+    cash_dividend_per_share: "1.00"
+    status: verified
+    evidence: "Q1 2019: 10% interim cash + 10% bonus. Gap 93.78 -> 85.00 (ratio 1.103)."
+    sources:
+      - https://www.meezanbank.com/?p=52192
+
+  - symbol: MEBL
+    ex_date: 2020-09-09
+    action_type: bonus
+    share_multiplier: "1.10"
+    status: verified
+    evidence: "10% bonus issued during 2020; credit notice 30 Sep 2020. Gap 93.67 -> 85.98 (ratio 1.089)."
+    sources:
+      - https://www.meezanbank.com/wp-content/themes/mbl/downloads/Publication-Of-Credit-Dispatch-Of-Bonus-Share-Certificates-2020.pdf
+      - https://meezanbank.com/?p=99531
+
+  - symbol: MEBL
+    ex_date: 2021-09-09
+    action_type: bonus
+    share_multiplier: "1.15"
+    cash_dividend_per_share: "1.50"
+    status: verified
+    evidence: "15 bonus shares per 100 approved 12 Aug 2021; credited 24 Sep 2021. Gap 154.63 -> 134.90 (ratio 1.146)."
+    sources:
+      - https://www.meezanbank.com/wp-content/themes/mbl/downloads/Publication-Credit-Dispatch-Of-Bonus-Share-Certificates-Sep2021.pdf
+
+  - symbol: MEBL
+    ex_date: 2022-08-22
+    action_type: bonus
+    share_multiplier: "1.10"
+    status: verified
+    evidence: "10% bonus approved 11 Aug 2022; credited 20 Sep 2022. Gap 137.54 -> 125.97 (ratio 1.092)."
+    sources:
+      - https://www.meezanbank.com/wp-content/themes/mbl/downloads/Publication-Credit-Dispatch-Of-Bonus-Share-Certificates-Sep2022.pdf
+
+  - symbol: MARI
+    ex_date: 2018-10-10
+    action_type: bonus
+    share_multiplier: "1.10"
+    status: verified
+    evidence: "1 bonus per 10 held; register closed 11 Oct 2018, books closed 12-18 Oct 2018. Gap 1550.85 -> 1436.00 (ratio 1.080)."
+    sources:
+      - https://dps.psx.com.pk/download/document/117364.pdf
+
+  - symbol: MARI
+    ex_date: 2019-10-14
+    action_type: bonus
+    share_multiplier: "1.10"
+    status: verified
+    evidence: "10% bonus for FY2019; books closed 16-22 Oct 2019. Gap 1164.21 -> 1070.00 (ratio 1.088)."
+    sources:
+      - https://dps.psx.com.pk/download/document/133010.pdf
+
+  - symbol: MARI
+    ex_date: 2024-09-16
+    action_type: bonus
+    share_multiplier: "9"
+    cash_dividend_per_share: "134.00"
+    status: verified
+    evidence: "800% bonus (8 per 1 held) + Rs134 final cash, announced 8 Aug 2024; transfers lodged by 18 Sep 2024 eligible. Gap 3536.83 -> 415.90 (ratio 8.50; +5.8% on the day)."
+    sources:
+      - https://profit.pakistantoday.com.pk/?p=170487
+      - https://nukta.com/mari-petroleum-announces-800-bonus-shares
+
+  # ---- Watchlist expansion (2026-10-21). Every ex_date below is the session of the price gap found by the
+  # quality checks; ratios and dividends are from the cited sources. Reviewer: Claude (AI), not human-verified.
+  # cash_dividend entries explain an ex-dividend drop larger than the daily limit; they do NOT adjust prices.
+
+  - symbol: LUCK
+    ex_date: 2025-04-28
+    action_type: split
+    share_multiplier: "5"
+    status: verified
+    evidence: "5-for-1 sub-division (face value Rs10 -> Rs2; 293m -> 1,465m shares), EOGM 18 Mar 2025; trading suspended 21-25 Apr 2025. First session after the suspension: prev close 1751.45 -> open 365.00 (x5 = 1825, +4.2%)."
+    sources:
+      - https://profit.pakistantoday.com.pk/2025/02/21/lucky-cement-to-implement-5-for-1-stock-split-to-enhance-liquidity
+      - https://propakistani.pk/2025/04/15/trading-in-lucky-cement-shares-to-be-suspended-next-week/amp/
+
+  - symbol: UBL
+    ex_date: 2025-06-23
+    action_type: split
+    share_multiplier: "2"
+    status: verified
+    evidence: "Sub-division Rs10 -> Rs5 (two Rs5 shares per Rs10 share), EOGM 15 May 2025; record date 20 Jun, book closure 21 Jun 2025; 23 Jun opened at half the 20 Jun close (524.19 -> 259.99)."
+    sources:
+      - https://mettisglobal.news/UBL-to-slash-share-face-value-to-Rs5-from-June-21-53028
+      - https://profit.pakistantoday.com.pk/2025/04/16/ubl-posts-rs36-1bn-profit-in-q1-announces-110-dividend-and-21-stock-split
+
+  - symbol: PSO
+    ex_date: 2017-10-11
+    action_type: bonus
+    share_multiplier: "1.20"
+    cash_dividend_per_share: "15.00"
+    status: verified
+    evidence: "FY2017: final cash dividend Rs15 (150%) + 20% stock dividend (1 for 5), board 7 Aug 2017. Gap 433.71 -> 354.00; (433.71-15)/1.2 = 348.9 (+1.5%)."
+    sources:
+      - https://psopk.com/en/media/press-releases/pressdetails?id=338
+
+  - symbol: PSO
+    ex_date: 2018-10-05
+    action_type: bonus
+    share_multiplier: "1.20"
+    cash_dividend_per_share: "5.00"
+    status: verified
+    evidence: "FY2018: final cash dividend Rs5 (50%) + 20% stock dividend, announced 13 Aug 2018. Gap 309.60 -> 254.00; (309.60-5)/1.2 = 253.8 (+0.1%)."
+    sources:
+      - https://psopk.com/en/media/press-releases/pso-closed-another-strong-year-with-20-increase-in-gross-sales-revenue-at-rs-13-trillion-and-rs-155-billion-in-profit-after-tax
+      - https://propakistani.pk/2018/08/13/pso-posts-rs-15-5-billion-in-after-tax-profit-for-2016-17/
+
+  - symbol: PSO
+    ex_date: 2019-10-16
+    action_type: bonus
+    share_multiplier: "1.20"
+    cash_dividend_per_share: "5.00"
+    status: verified
+    evidence: "FY2019: final cash dividend Rs5 (50%) + 20% stock dividend, announced 25 Sep 2019. Gap 174.87 -> 143.99; (174.87-5)/1.2 = 141.6 (+1.7%)."
+    sources:
+      - https://psopk.com/en/media/press-releases/pso-announces-financial-results-declares-rs-106-billion-in-profit-after-tax
+
+  - symbol: PPL
+    ex_date: 2018-10-12
+    action_type: bonus
+    share_multiplier: "1.15"
+    cash_dividend_per_share: "1.50"
+    status: unverified
+    evidence: "FY2018: 15% final cash dividend + 15% bonus shares (source dated 26 Oct 2018, no book-closure dates). Gap 210.01 -> 185.00; (210.01-1.5)/1.15 = 181.3 (+2.0%); no other gap Oct-Nov 2018. Ex-date inferred from prices only: confirm against the PSX notice."
+    sources:
+      - https://propakistani.pk/2018/10/26/ppl-posts-its-second-highest-profit-ever-in-fy2017-18/
+
+  - symbol: PPL
+    ex_date: 2019-10-16
+    action_type: bonus
+    share_multiplier: "1.20"
+    cash_dividend_per_share: "2.00"
+    status: verified
+    evidence: "FY2019: final cash dividend Rs2 + bonus 1 for every 5 ordinary shares; register as of 17 Oct 2019. Gap 136.26 -> 113.90; (136.26-2)/1.2 = 111.9 (+1.8%)."
+    sources:
+      - https://tribune.com.pk/story/2065259/ppl-profit-surges-30-rs59-5-billion
+
+  - symbol: NBP
+    ex_date: 2017-04-05
+    action_type: cash_dividend
+    share_multiplier: "1"
+    cash_dividend_per_share: "7.50"
+    status: verified
+    evidence: "CY2016 final cash dividend Rs7.50 (75%), approved at the 68th AGM on 30 Mar 2017. Gap 74.18 -> 66.50; 74.18-7.5 = 66.68 (-0.3%)."
+    sources:
+      - https://profit.pakistantoday.com.pk/2017/02/22/nbp-declares-rs-22-8bn-pat-in-2016-up-by-18
+      - https://nbp.com.pk/InvestorRelations/PressRelease-68th-AGM.pdf
+
+  - symbol: NBP
+    ex_date: 2026-03-17
+    action_type: cash_dividend
+    share_multiplier: "1"
+    cash_dividend_per_share: "35.00"
+    status: verified
+    evidence: "CY2025 final cash dividend Rs35 (350%), board 24 Feb 2026; record date 17 Mar 2026. Gap 228.42 -> 193.00; 228.42-35 = 193.42 (-0.2%)."
+    sources:
+      - https://www.brecorder.com/news/40409022/nbp-declares-highest-ever-net-profit-of-rs859bn
+      - https://www.techjuice.pk/nbp-350-dividend-when-will-shareholders-actually-get-paid/
+
+  - symbol: HUBC
+    ex_date: 2022-10-11
+    action_type: cash_dividend
+    share_multiplier: "1"
+    cash_dividend_per_share: "15.50"
+    status: unverified
+    evidence: "1HFY23 results (Feb 2023) state an interim dividend of Rs15.5 already paid in Jul-Dec 2022. Gap 79.03 -> 65.00; 79.03-15.5 = 63.53 (+2.3%). Ex-date inferred from prices only: confirm against the PSX notice."
+    sources:
+      - https://propakistani.pk/2023/02/27/hub-power-company-posts-massive-profit-in-1hfy23/amp/

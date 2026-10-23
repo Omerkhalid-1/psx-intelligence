@@ -1,0 +1,186 @@
+# News discovery configuration (Google News RSS). See docs/news_sentiment.md.
+#
+# aliases: phrases that identify the company in a headline (case-insensitive, whole words).
+#   strong aliases identify the company on their own; weak aliases (short/ambiguous names) count
+#   only when a context word also appears in the headline.
+# queries: Google News search strings used for discovery (relevance is decided afterwards).
+
+symbols:
+  SYS:
+    strong_aliases: ["Systems Limited", "Systems Ltd", "PSX:SYS", "SYS share", "SYS stock"]
+    weak_aliases: ["Systems"]
+    context_words: ["IT", "tech", "technology", "software", "PSX", "shares", "profit", "earnings", "dividend",
+                    "bonus", "acquisition", "Confiz", "revenue", "exports", "stock split"]
+    exclude: ["control systems", "systems engineering", "health systems", "payment systems"]
+    # Many unrelated firms are called "<Name> Systems Limited" (mostly Indian listings): require
+    # Pakistani context and veto foreign-market markers. Found via the evaluation set (sample 1).
+    require_pk_context: true
+    queries: ['"Systems Limited"', '"Systems Ltd" PSX']
+  FFC:
+    strong_aliases: ["Fauji Fertilizer Company", "Fauji Fertilizer Co", "FFC"]
+    weak_aliases: ["Fauji Fertilizer"]
+    context_words: ["urea", "fertilizer", "PSX", "profit", "dividend", "shares", "earnings", "FFBL", "Agritech"]
+    exclude: ["Fauji Fertilizer Bin Qasim"]
+    queries: ['"Fauji Fertilizer Company"', '"FFC" fertilizer PSX']
+  MEBL:
+    strong_aliases: ["Meezan Bank", "MEBL"]
+    weak_aliases: []
+    context_words: []
+    exclude: []
+    queries: ['"Meezan Bank"']
+  MARI:
+    strong_aliases: ["Mari Petroleum", "Mari Energies", "MARI"]
+    weak_aliases: ["Mari"]
+    context_words: ["gas", "oil", "field", "petroleum", "energy", "exploration", "PSX", "profit", "dividend",
+                    "bonus", "shares", "Sui"]
+    exclude: []
+    queries: ['"Mari Petroleum"', '"Mari Energies"']
+
+  # ---- Watchlist expansion (2026-10-21). Aliases are the names Pakistani press uses; ambiguous tickers and
+  # names require Pakistani context. Reviewer: claude-ai (not human-verified) — validate against a labelled
+  # sample before relying on per-symbol sentiment.
+  LUCK:
+    strong_aliases: ["Lucky Cement", "LUCK"]
+    weak_aliases: []
+    context_words: []
+    exclude: ["Lucky Core", "Lucky Motor", "Lucky Textile", "Lucky Electric", "Lucky Star"]
+    queries: ['"Lucky Cement"']
+  DGKC:
+    strong_aliases: ["D.G. Khan Cement", "DG Khan Cement", "D G Khan Cement", "DGKC"]
+    weak_aliases: []
+    context_words: []
+    exclude: []
+    queries: ['"DG Khan Cement"', '"D.G. Khan Cement"']
+  FCCL:
+    strong_aliases: ["Fauji Cement", "FCCL"]
+    weak_aliases: []
+    context_words: []
+    exclude: []
+    queries: ['"Fauji Cement"']
+  OGDC:
+    strong_aliases: ["Oil and Gas Development Company", "Oil & Gas Development Company", "OGDCL", "OGDC"]
+    weak_aliases: []
+    context_words: []
+    exclude: []
+    queries: ['"OGDCL"', '"Oil and Gas Development Company"']
+  PPL:
+    strong_aliases: ["Pakistan Petroleum Limited", "Pakistan Petroleum Ltd"]
+    weak_aliases: ["Pakistan Petroleum", "PPL"]
+    context_words: ["gas", "oil", "field", "well", "discovery", "exploration", "block", "profit", "dividend", "bonus",
+                    "shares", "PSX", "Sui", "E&P", "production"]
+    exclude: ["Ministry of Petroleum", "Petroleum Division", "PPL Corporation", "PPL Electric", "PPL Corp"]
+    require_pk_context: true
+    queries: ['"Pakistan Petroleum Limited"', '"PPL" gas field Pakistan']
+  HBL:
+    strong_aliases: ["Habib Bank Limited", "Habib Bank", "HBL"]
+    weak_aliases: []
+    context_words: []
+    exclude: ["HBL PSL", "PSL", "Pakistan Super League", "Habib Bank AG Zurich", "Habib Bank Zurich", "AG Zurich"]
+    require_pk_context: true
+    queries: ['"Habib Bank Limited"', '"HBL" bank Pakistan']
+  UBL:
+    strong_aliases: ["United Bank Limited", "UBL"]
+    weak_aliases: ["United Bank"]
+    context_words: ["Pakistan", "PSX", "profit", "dividend", "shares", "branch", "deposits", "banking"]
+    exclude: ["United Bank for Africa", "United Bank of India", "UBA"]
+    require_pk_context: true
+    queries: ['"United Bank Limited"', '"UBL" bank Pakistan']
+  MCB:
+    strong_aliases: ["MCB Bank", "MCB"]
+    weak_aliases: []
+    context_words: []
+    exclude: ["Mauritius Commercial Bank", "MCB Group", "Mauritius", "MCB Islamic", "MCB Funds", "MCB-Arif Habib",
+              "MCB Arif Habib", "MCB Investment Management"]
+    require_pk_context: true
+    queries: ['"MCB Bank"']
+  NBP:
+    strong_aliases: ["National Bank of Pakistan", "NBP"]
+    weak_aliases: []
+    context_words: []
+    exclude: ["NBP Funds", "NBP Fund"]
+    queries: ['"National Bank of Pakistan"']
+  EFERT:
+    strong_aliases: ["Engro Fertilizers", "Engro Fertiliser", "EFERT"]
+    weak_aliases: []
+    context_words: []
+    exclude: []
+    queries: ['"Engro Fertilizers"']
+  HUBC:
+    strong_aliases: ["Hub Power", "Hubco", "HUBCO", "HUBC"]
+    weak_aliases: []
+    context_words: []
+    exclude: []
+    queries: ['"Hub Power"', '"Hubco"']
+  KEL:
+    strong_aliases: ["K-Electric", "K Electric", "KEL"]
+    weak_aliases: []
+    context_words: []
+    exclude: []
+    queries: ['"K-Electric"']
+  PSO:
+    strong_aliases: ["Pakistan State Oil", "PSO"]
+    weak_aliases: []
+    context_words: []
+    exclude: ["Philharmonic", "Symphony Orchestra", "Personal Security Officer"]
+    require_pk_context: true
+    queries: ['"Pakistan State Oil"', '"PSO" fuel Pakistan']
+  TRG:
+    strong_aliases: ["TRG Pakistan", "TRG"]
+    weak_aliases: []
+    context_words: []
+    exclude: ["TRG Datacenters", "TRG Group"]
+    require_pk_context: true
+    queries: ['"TRG Pakistan"']
+  INDU:
+    strong_aliases: ["Indus Motor", "Toyota Indus", "INDU"]
+    weak_aliases: []
+    context_words: []
+    exclude: []
+    queries: ['"Indus Motor"', '"Toyota Indus"']
+
+# Market-wide topics, stored under the pseudo-symbol MARKET (used for KSE100 and as context).
+market:
+  strong_aliases: ["KSE-100", "KSE100", "Pakistan Stock Exchange", "PSX", "State Bank of Pakistan", "SBP",
+                   "policy rate", "monetary policy"]
+  queries: ['"KSE-100"', '"Pakistan Stock Exchange"', '"State Bank of Pakistan" policy rate']
+
+# Pakistani context used by entities with require_pk_context.
+pk_context:
+  publisher_domains: ["brecorder.com", "mettisglobal.news", "propakistani.pk", "dawn.com", "thenews.com.pk",
+                      "tribune.com.pk", "profit.pakistantoday.com.pk", "pakistantoday.com.pk", "arabnews.pk",
+                      "digitalpakistan.pk", "techjuice.pk", "nation.com.pk", "app.com.pk", "urdupoint.com",
+                      "samaa.tv", "geo.tv", "aaj.tv", "dunyanews.tv", "bloompakistan.com", "nukta.com",
+                      "thefridaytimes.com", "pakobserver.net", "dailytimes.com.pk", "psx.com.pk", "secp.gov.pk"]
+  words: ["Pakistan", "Pakistani", "PSX", "KSE", "Lahore", "Karachi", "Islamabad", "SECP", "SBP", "PKR"]
+  foreign_markers: ["NSE", "BSE", "₹", "crore", "lakh", "Sensex", "Nifty", "HKD", "HKEX", "ASX", "TSX", "LSE:",
+                    "Nigeria", "Malawi", "Kenya", "Ghana"]
+
+# Event categories by keyword (first match in this order wins). Matching is case-insensitive.
+event_keywords:
+  earnings: ["profit", "earnings", "EPS", "results", "revenue", "net income", "loss", "quarter", "1Q", "2Q", "3Q",
+             "4Q", "half-year", "annual results", "CY2", "FY2"]
+  dividend_corporate_action: ["dividend", "payout", "bonus", "stock split", "split", "rights issue", "book closure",
+                              "buyback", "face value"]
+  acquisition_strategy: ["acquire", "acquisition", "merger", "merge", "stake", "takeover", "divest"]
+  contract_business: ["contract", "agreement", "partnership", "MoU", "launch", "expansion", "order", "deal",
+                      "discovery", "field", "plant"]
+  management_governance: ["CEO", "chairman", "board", "appoint", "resign", "director", "AGM", "EOGM"]
+  legal_regulatory: ["SECP", "court", "lawsuit", "regulator", "penalty", "fine", "tax", "ban", "probe", "OGRA"]
+  macro_policy: ["policy rate", "interest rate", "inflation", "CPI", "IMF", "budget", "rupee", "exchange rate",
+                 "monetary policy", "SBP", "GDP"]
+  sector: ["sector", "industry", "banks", "banking", "fertilizer", "urea", "E&P", "oil", "gas", "IT exports"]
+
+# Provider politeness and limits.
+provider:
+  min_request_interval_seconds: 3.0
+  timeout_seconds: 20
+  max_items_per_feed: 100
+  language: en
+  region: PK
+
+# On-demand symbol search (website news search) for symbols without curated rules above.
+# Matching rules are derived from the listed company name; add exclusions here when a company name
+# doubles as a brand for unrelated topics. Reviewed: claude-ai, 2026-10-21 (not human-verified).
+search_overrides:
+  HBL:
+    exclude: ["HBL PSL", "Pakistan Super League", "PSL"]

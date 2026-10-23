@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Runtime output (never commit)
+logs/*
+!logs/.gitkeep
+*.log
+artifacts/*
+!artifacts/.gitkeep
+data/raw/
+data/imports/
+celerybeat-schedule*
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.sw?
+
+# psxdata-api service virtualenv
+services/psxdata-api/.venv/
+
+# Third-party reference datasets (licence restrictions; fetched by scripts, not committed)
+data/reference/
+
+# Local dev database/redis data
+.local/
+
+# Static site export (flask --app wsgi site export)
+build/

@@ -1,0 +1,25 @@
+# Display metadata for the tracked watchlist (PSXDATA_SYMBOLS). Sectors use the PSX sector classification.
+# Source: psxdata-api /screener sector code + /sectors names (checked 2026-10-21) where returned; entries
+# marked `source: classification` were not in the screener response and follow the PSX sector lists
+# (reviewer: claude-ai, not human-verified).
+symbols:
+  KSE100: {sector: "Index", source: index}
+  SYS:    {sector: "Technology & Communication", source: classification}
+  TRG:    {sector: "Technology & Communication", source: screener}
+  FFC:    {sector: "Fertilizer", source: classification}
+  EFERT:  {sector: "Fertilizer", source: screener}
+  MEBL:   {sector: "Commercial Banks", source: classification}
+  HBL:    {sector: "Commercial Banks", source: screener}
+  UBL:    {sector: "Commercial Banks", source: screener}
+  MCB:    {sector: "Commercial Banks", source: screener}
+  NBP:    {sector: "Commercial Banks", source: screener}
+  MARI:   {sector: "Oil & Gas Exploration", source: classification}
+  OGDC:   {sector: "Oil & Gas Exploration", source: classification}
+  PPL:    {sector: "Oil & Gas Exploration", source: classification}
+  PSO:    {sector: "Oil & Gas Marketing", source: classification}
+  LUCK:   {sector: "Cement", source: screener}
+  DGKC:   {sector: "Cement", source: classification}
+  FCCL:   {sector: "Cement", source: screener}
+  HUBC:   {sector: "Power Generation & Distribution", source: classification}
+  KEL:    {sector: "Power Generation & Distribution", source: screener}
+  INDU:   {sector: "Automobile Assembler", source: screener}

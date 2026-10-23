@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% from "dashboard/_macros.html" import status_badge, dependency_table, freshness_badge, signed, num, pct, info %}
+{% block title %}Overview · PSX Intelligence{% endblock %}
+{% block content %}
+<h1 class="h3">Market overview</h1>
+<p class="text-muted">System status {{ status_badge(overall) }}
+  {% if overview %} · latest verified session <strong>{{ overview.latest_session }}</strong>{% endif %}</p>
+
+{% if research_error %}
+  <div class="alert alert-warning">{{ research_error }}</div>
+{% elif overview %}
+<div class="alert alert-light border small mb-3">{{ overview.coverage.note }} Forecasts are research estimates with quantified
+  uncertainty; walk-forward tests have not shown skill over a no-change forecast (<a href="{{ url_for('dashboard.models_page') }}">evidence</a>).</div>
+<div class="row g-3 mb-3">
+  <div class="col-xl-8"><div class="card h-100"><div class="card-header">Tracked instruments: performance, trend and regime
+    {{ info("Returns use split/bonus-adjusted closes. Trend and volatility regime come from the research summary (fixed descriptive thresholds). Sentiment = latest 7-day headline tone (FinBERT); 'insufficient' means no relevant news, not neutral.") }}</div>
+    <div class="card-body"><div class="table-responsive"><table class="table table-sm align-middle small mb-0">
+      <thead><tr><th>Symbol</th><th class="text-end">Close</th><th class="text-end">1d</th><th class="text-end">5d</th><th class="text-end">20d</th>
+        <th class="text-end">60d</th><th class="text-end">1y</th><th>Trend</th><th>Vol. regime</th><th>7d news tone</th></tr></thead>
+      <tbody>{% for r in overview.instruments %}
+        <tr><td><a href="{{ url_for('dashboard.stock_page', symbol=r.symbol) }}"><strong>{{ r.symbol }}</strong></a>{% if r.is_index %} <span class="small text-muted">index</span>{% endif %}</td>
+          <td class="text-end font-monospace">{{ num(r.close) }}</td>
+          {% for k in ['1d','5d','20d','60d','250d'] %}<td class="text-end font-monospace">{{ pct(r.returns[k], 1, signed=True) }}</td>{% endfor %}
+          <td>{{ (r.trend or 'n/a')|replace('_',' ') }}</td><td>{{ r.volatility_regime or 'n/a' }}</td>
+          <td>{% if r.sentiment %}{{ r.sentiment.label }}{% if r.sentiment.score is not none %} ({{ '%+.2f'|format(r.sentiment.score) }}, {{ r.sentiment.n_events }} ev.){% endif %}{% else %}<span class="value-missing">no data</span>{% endif %}</td></tr>
+      {% endfor %}</tbody></table></div>
+      <p class="small text-muted mb-0 mt-2">Top 20d within the watchlist: {% for r in overview.top_20d %}{{ r.symbol }} {{ pct(r.returns['20d'], 1, signed=True) }}{{ ', ' if not loop.last }}{% endfor %}
+        · bottom: {% for r in overview.bottom_20d %}{{ r.symbol }} {{ pct(r.returns['20d'], 1, signed=True) }}{{ ', ' if not loop.last }}{% endfor %}</p>
+    </div></div></div>
+  <div class="col-xl-4"><div class="card h-100"><div class="card-header">Recent relevant headlines</div>
+    <div class="card-body small" style="max-height:330px;overflow:auto">
+    {% for n in overview.recent_news %}<div class="border-bottom py-1"><span class="badge text-bg-light border">{{ n.symbol }}</span>
+      <a href="{{ n.url }}" target="_blank" rel="noopener noreferrer nofollow">{{ n.title }}</a>
+      <div class="text-muted">{{ n.publisher or '' }} · {{ (n.published_at or '')[:10] }} · tone {{ n.sentiment_label or 'not scored' }}</div></div>
+    {% else %}<p class="text-muted mb-0">No headlines ingested.</p>{% endfor %}</div></div></div>
+</div>
+{% endif %}
+
+<div class="card mb-3">
+  <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span>Watchlist <span class="small text-muted">· source: {{ source_label or 'psxdata-api' }}</span></span>
+    {% if not market_error %}
+      <span>{{ freshness_badge(bars_fresh.state, 'daily bars') }} {{ freshness_badge(quotes_fresh.state, 'quotes') }}</span>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    {% if market_error %}
+      <div class="alert alert-danger mb-0" role="alert">{{ market_error }} See System health and the API logs.</div>
+    {% elif not has_data %}
+      <div class="alert alert-secondary mb-0" role="status">
+        No market data has been ingested yet.
+        {% if not integration.ready %}
+          The psxdata integration is not ready: {{ integration.problems|join('; ') }}.
+          See <code>docs/operations.md</code> to start the psxdata-api service and enable it.
+        {% elif bars_fresh.last_run and bars_fresh.last_run.status.value == 'failed' %}
+          The last daily-bar sync failed ({{ bars_fresh.last_run.error_category }}): {{ bars_fresh.last_run.error_summary }}
+        {% else %}
+          Load history with <code>flask --app wsgi ingest-psx bars --full --sync</code>.
+        {% endif %}
+      </div>
+    {% else %}
+      {% for f in [bars_fresh, quotes_fresh] %}
+        {% if f.state == 'stale' %}
+          <div class="alert alert-warning py-2" role="alert"><strong>{{ f.dataset|replace('_', ' ') }} stale:</strong> {{ f.detail }}</div>
+        {% endif %}
+        {% if f.last_run and f.last_run.status.value == 'failed' %}
+          <div class="alert alert-warning py-2" role="alert">The most recent {{ f.dataset|replace('_', ' ') }} sync failed
+            ({{ f.last_run.error_category }}); showing the last stored data.</div>
+        {% elif f.last_run and f.last_run.status.value == 'partially_succeeded' %}
+          <div class="alert alert-info py-2" role="status">Last {{ f.dataset|replace('_', ' ') }} sync partially succeeded:
+            {{ f.last_run.error_summary }}</div>
+        {% endif %}
+      {% endfor %}
+
+      <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr class="small text-muted">
+            <th></th><th></th>
+            <th colspan="5" class="text-center border-start">Latest daily bar (unadjusted)</th>
+            <th colspan="3" class="text-center border-start">Live quote</th>
+          </tr>
+          <tr>
+            <th>Symbol</th><th>Kind</th>
+            <th class="border-start">Session</th><th class="text-end">Close</th><th class="text-end">Change</th>
+            <th class="text-end">Change %</th><th class="text-end">Volume</th>
+            <th class="text-end border-start">Price</th><th class="text-end">Change %</th><th>Retrieved (PKT)</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for s in summaries %}
+          <tr>
+            <td><strong>{{ s.symbol }}</strong></td>
+            <td><span class="badge text-bg-light border">{{ s.kind or 'unclassified' }}</span></td>
+            {% if s.bar %}
+              <td class="border-start">{{ s.bar.session_date.isoformat() }}
+                {% if s.bar.quality_flags %}<span class="badge text-bg-warning" title="{{ s.bar.quality_flags|join(', ') }}">flagged</span>{% endif %}</td>
+              <td class="text-end font-monospace">{{ num(s.bar.close) }}</td>
+              <td class="text-end font-monospace">{{ signed(s.day_change) }}</td>
+              <td class="text-end font-monospace">{{ signed(s.day_change_pct, suffix='%') }}</td>
+              <td class="text-end font-monospace">{{ '{:,}'.format(s.bar.volume) }}</td>
+            {% else %}
+              <td class="border-start" colspan="5"><span class="value-missing">no bars stored</span></td>
+            {% endif %}
+            {% if s.quote %}
+              <td class="text-end font-monospace border-start">{{ num(s.quote.price) }}</td>
+              <td class="text-end font-monospace">{{ signed(s.quote.change_pct, suffix='%') }}</td>
+              <td class="small">{{ s.quote.retrieved_at.astimezone(psx_tz).strftime('%Y-%m-%d %H:%M') }}
+                {% if s.quote.provider_cached %}<span class="text-muted">(cached)</span>{% endif %}</td>
+            {% else %}
+              <td class="border-start" colspan="3"><span class="value-missing">{{ 'not available for indices' if s.kind == 'index' else 'no quote stored' }}</span></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
+      <p class="small text-muted mb-0">
+        Bar change is computed from the two most recent stored sessions. {{ price_note }}
+        Daily bars: {{ bars_fresh.detail }}.
+        {% if quotes_fresh.detail %}Quotes: {{ quotes_fresh.detail }}.{% endif %}
+      </p>
+    {% endif %}
+  </div>
+</div>
+
+{% if charts %}
+<div class="card mb-3">
+  <div class="card-header">Close price, last ~1 year <span class="small text-muted">· unadjusted, from stored daily bars</span></div>
+  <div class="card-body">
+    <div class="row g-3">
+      {% for symbol in charts %}
+        <div class="col-md-6 col-xl-4"><div id="chart-{{ symbol }}" class="price-chart" role="img"
+             aria-label="{{ symbol }} close price history"></div></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header">Dependencies</div>
+  <div class="card-body">{{ dependency_table(checks) }}</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if charts %}
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js"></script>
+<script>
+  const charts = {{ charts|tojson }};
+  for (const [symbol, series] of Object.entries(charts)) {
+    Plotly.newPlot(`chart-${symbol}`, [{x: series.x, y: series.y, type: "scatter", mode: "lines",
+      line: {width: 1.5, color: "#3b5b92"}, hovertemplate: "%{x}<br>%{y:,.2f}<extra></extra>"}],
+      {title: {text: symbol, font: {size: 14}}, height: 220, margin: {l: 50, r: 10, t: 30, b: 30},
+       xaxis: {type: "date"}, yaxis: {tickformat: ",.0f"}},
+      {displayModeBar: false, responsive: true});
+  }
+</script>
+{% endif %}
+{% endblock %}

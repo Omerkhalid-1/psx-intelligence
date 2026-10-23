@@ -1,0 +1,182 @@
+{% extends "site/base.html" %}
+{% block title %}How a stock works · PSX Intelligence{% endblock %}
+{% block description %}An interactive tour of how a stock price works and how technical indicators read it, using real PSX data.{% endblock %}
+{% block content %}
+<div class="progress" id="progress" aria-hidden="true"></div>
+<section class="hero"><div class="wrap">
+  <span class="kicker reveal">Interactive guide · 12 chapters</span>
+  <h1 class="reveal" style="--i:1">How a <span class="grad">stock</span> works,<br>one indicator at a time.</h1>
+  <p class="lead reveal" style="--i:2">Scroll through. Animations marked <span class="illustration-tag">illustration</span> are teaching models;
+    every chart without that tag uses real, stored PSX data for the stock you pick below.</p>
+  <div class="row reveal" style="--i:3;margin-top:22px">
+    <span class="small muted">Use real data from</span>
+    <label class="visually-hidden" for="learn-symbol">Symbol for the live charts</label>
+    <select class="picker" id="learn-symbol">
+      {% for sector, rows in watch_meta()|groupby('sector') %}<optgroup label="{{ sector }}">
+        {% for r in rows %}<option value="{{ r.symbol }}" {% if r.symbol == page_data.symbol %}selected{% endif %}>{{ r.symbol }} · {{ r.name }}</option>{% endfor %}
+      </optgroup>{% endfor %}
+    </select>
+    <span class="small muted" id="learn-status" aria-live="polite"></span>
+  </div>
+  <nav class="toc reveal" style="--i:4;margin-top:22px" aria-label="Chapters">
+    {% for id, t in [('share','Shares'),('price','Price'),('candle','Candles'),('volume','Volume'),('trend','Trend'),('rsi','RSI'),('macd','MACD'),('vol','Volatility'),('levels','Levels'),('relative','Relative strength'),('drawdown','Drawdown'),('together','Together')] %}
+      <a href="#{{ id }}">{{ loop.index }} · {{ t }}</a>
+    {% endfor %}
+  </nav>
+</div></section>
+
+<div class="wrap">
+  <section class="chapter" id="share">
+    <div class="chapter-text reveal">
+      <span class="chapter-num">01 · OWNERSHIP</span>
+      <h2>A share is a slice of a company</h2>
+      <p>A company divides its ownership into millions of equal pieces called <b>shares</b>. Listed companies trade those pieces
+        on the <b>Pakistan Stock Exchange (PSX)</b>, formed in 2016 by merging the Karachi, Lahore and Islamabad exchanges.</p>
+      <p>The <b>KSE-100</b> index follows 100 large PSX companies. When people say “the market rose”, they usually mean this index.</p>
+    </div>
+    <div class="card demo reveal" style="--i:1"><span class="illustration-tag">illustration</span><svg id="demo-share" viewBox="0 0 400 300" role="img" aria-label="A company split into shares"></svg>
+      <p class="caption">Each slice is one share. Owning more shares means owning more of the company.</p></div>
+  </section>
+
+  <section class="chapter" id="price">
+    <div class="chapter-text reveal">
+      <span class="chapter-num">02 · PRICE</span>
+      <h2>Price is where a buyer meets a seller</h2>
+      <p>Buyers post <b>bids</b> (the most they will pay); sellers post <b>asks</b> (the least they will accept). A trade happens when
+        someone accepts the other side. The last trade's price is “the price”.</p>
+      <p>More eager buyers lift the price; more eager sellers push it down. Indicators study the trail these trades leave behind.</p>
+    </div>
+    <div class="card demo reveal" style="--i:1"><span class="illustration-tag">illustration · not real orders</span><canvas id="demo-book" role="img" aria-label="Animated order book: bids, asks and trades"></canvas>
+      <p class="caption">Teal = bids, orange = asks. Each flash in the middle is a trade, and the line below is the price it creates.</p></div>
+  </section>
+
+  <section class="chapter" id="candle">
+    <div class="chapter-text reveal">
+      <span class="chapter-num">03 · CANDLES</span>
+      <h2>A whole day folds into one candle</h2>
+      <p>Thousands of trades in a session are summarised by four numbers: <b>open</b> (first price), <b>high</b>, <b>low</b> and
+        <b>close</b> (last price). Drawn as a candle, the body spans open to close and the thin wicks reach the high and low.</p>
+      <p>On this site a <b>hollow</b> candle closed higher than it opened; a <b>filled</b> one closed lower.</p>
+    </div>
+    <div class="card demo reveal" style="--i:1"><span class="illustration-tag">illustration</span><canvas id="demo-candle" role="img" aria-label="A trading day's path collapsing into a candlestick"></canvas>
+      <p class="caption">Watch a simulated day's trading path become a single candle.</p></div>
+  </section>
+
+  <section class="chapter" id="volume">
+    <div class="chapter-text reveal">
+      <span class="chapter-num">04 · VOLUME</span>
+      <h2>Volume: how many shares changed hands</h2>
+      <p>Volume tells you how much conviction is behind a move. A big price change on heavy volume involves many participants;
+        the same change on thin volume involves few.</p>
+      <p><b>Relative volume</b> compares a day with its 20-day average. The glowing bars are days with more than twice the usual volume.</p>
+      <p class="small text-2" data-live="volume-text"></p>
+    </div>
+    <div class="card demo reveal" style="--i:1"><div class="label" data-live="symbol-label">Last 60 sessions</div><div class="bars" id="demo-volume" aria-label="Daily volume bars"></div>
+      <p class="caption">Real volume, last 60 sessions. Teal = up day, orange = down day.</p></div>
+  </section>
+
+  <section class="chapter" id="trend">
+    <div class="chapter-text reveal">
+      <span class="chapter-num">05 · TREND</span>
+      <h2>Moving averages reveal the trend</h2>
+      <p>Daily prices are noisy. A <b>moving average</b> replaces each day with the average of the last <i>n</i> closes, so the
+        direction shows through. Short averages react fast; long ones are smooth but slow.</p>
+      <label class="small" for="ma-n">Average length: <b class="mono" id="ma-n-label">50</b> sessions</label>
+      <input class="slider" type="range" id="ma-n" min="5" max="200" step="1" value="50">
+      <p class="text-2" data-live="ma-text"></p>
+    </div>
+    <div class="card demo reveal" style="--i:1"><div class="chart-box" id="demo-trend" style="height:320px"></div>
+      <p class="caption">Real closes (blue) and the moving average you chose (magenta).</p></div>
+  </section>
+
+  <section class="chapter" id="rsi">
+    <div class="chapter-text reveal">
+      <span class="chapter-num">06 · MOMENTUM</span>
+      <h2>RSI: are gains or losses winning?</h2>
+      <p>The <b>Relative Strength Index</b> compares the average size of recent up-days with recent down-days, on a 0–100 scale.
+        Above 50, gains have been bigger; above 70 the move is stretched (“overbought”); below 30 stretched down (“oversold”).</p>
+      <div class="kv" id="rsi-kv"></div>
+      <p class="tiny muted">The bars use plain 14-day averages to show the idea; the engine's official RSI uses Wilder's smoothing, which also weighs older days.</p>
+    </div>
+    <div class="card demo reveal" style="--i:1"><div class="label">Last 14 daily changes</div><div class="rsi-bars" id="demo-rsi"></div>
+      <div id="rsi-gauge" style="margin-top:12px"></div></div>
+  </section>
+
+  <section class="chapter" id="macd">
+    <div class="chapter-text reveal">
+      <span class="chapter-num">07 · ACCELERATION</span>
+      <h2>MACD: two averages racing</h2>
+      <p>MACD subtracts a slow (26-day) exponential average from a fast (12-day) one. When the fast one pulls away upward, momentum
+        is building; the <b>histogram</b> shows whether that gap is widening or shrinking compared with its own 9-day average.</p>
+      <p class="text-2" data-live="macd-text"></p>
+    </div>
+    <div class="card demo reveal" style="--i:1"><div class="chart-box" id="demo-macd" style="height:320px"></div>
+      <p class="caption">Real data, last 250 sessions: MACD (blue), signal (amber), histogram.</p></div>
+  </section>
+
+  <section class="chapter" id="vol">
+    <div class="chapter-text reveal">
+      <span class="chapter-num">08 · VOLATILITY</span>
+      <h2>Volatility: how wide the swings are</h2>
+      <p><b>ATR</b> (Average True Range) is the typical daily range, gaps included. <b>Bollinger Bands</b> sit two standard deviations
+        above and below the 20-day average: they widen in turbulent periods and pinch together in quiet ones.</p>
+      <p class="text-2" data-live="vol-text"></p>
+    </div>
+    <div class="card demo reveal" style="--i:1"><div class="chart-box" id="demo-bb" style="height:320px"></div>
+      <p class="caption">Real closes inside their Bollinger Bands (violet), last 250 sessions.</p></div>
+  </section>
+
+  <section class="chapter" id="levels">
+    <div class="chapter-text reveal">
+      <span class="chapter-num">09 · MEMORY</span>
+      <h2>Support &amp; resistance: where prices turned before</h2>
+      <p>Prices often pause near levels where they reversed in the past, because many traders remember them. The engine clusters
+        past swing highs and lows into zones: <b>support</b> below the price, <b>resistance</b> above.</p>
+      <p class="text-2" data-live="levels-text"></p>
+    </div>
+    <div class="card demo reveal" style="--i:1"><div class="chart-box" id="demo-levels" style="height:320px"></div>
+      <p class="caption">Real closes with the engine's nearest zones (teal support, orange resistance).</p></div>
+  </section>
+
+  <section class="chapter" id="relative">
+    <div class="chapter-text reveal">
+      <span class="chapter-num">10 · CONTEXT</span>
+      <h2>Relative strength: the stock versus the market</h2>
+      <p>A stock can fall less than the market and still be a relative winner. Rebasing both to 0% a year ago shows who led.
+        <b>Beta</b> measures how strongly the stock tends to move with the KSE-100.</p>
+      <p class="text-2" data-live="rel-text"></p>
+    </div>
+    <div class="card demo reveal" style="--i:1"><div class="chart-box" id="demo-rel" style="height:320px"></div>
+      <p class="caption">Real data: stock (blue) vs KSE-100 (magenta), % change over the last 250 sessions.</p></div>
+  </section>
+
+  <section class="chapter" id="drawdown">
+    <div class="chapter-text reveal">
+      <span class="chapter-num">11 · RISK</span>
+      <h2>Drawdown: distance from the peak</h2>
+      <p>Drawdown is how far the price sits below its highest close. It is the pain a holder from the top would feel. Losses
+        compound unevenly: a 50% fall needs a 100% rise to recover.</p>
+      <p class="text-2" data-live="dd-text"></p>
+    </div>
+    <div class="card demo reveal" style="--i:1"><div class="chart-box" id="demo-dd" style="height:320px"></div>
+      <p class="caption">Real data: % below the all-time stored peak.</p></div>
+  </section>
+
+  <section class="chapter" id="together">
+    <div class="chapter-text reveal">
+      <span class="chapter-num">12 · TOGETHER</span>
+      <h2>Putting it together, honestly</h2>
+      <p>The engine turns each directional indicator into positive, neutral or negative and counts them into an
+        <b>indicator balance</b>. It is a tidy summary of what already happened.</p>
+      <p>It is <b>not</b> a forecast. When this project tested models built on these same indicators against simply assuming
+        “no change” (walk-forward, out-of-sample), they did not do better. Use indicators to understand, not to predict.</p>
+      <div class="actions row" style="margin-top:16px"><a class="btn" id="together-link" href="{{ url_for('site.stock', symbol=page_data.symbol) }}">Open the full {{ page_data.symbol }} dashboard →</a>
+        <a class="btn btn-ghost" href="{{ url_for('site.engine_page') }}">How the engine is checked</a></div>
+    </div>
+    <div class="card glow demo reveal" style="--i:1;text-align:center"><div class="label">Indicator balance</div><div id="together-gauge"></div>
+      <h3 data-live="together-label"></h3><ul class="story" id="together-story" style="text-align:left;margin-top:10px"></ul></div>
+  </section>
+</div>
+{% endblock %}
+{% block vendor %}<script src="{{ asset('vendor/lightweight-charts-4.2.3/lightweight-charts.standalone.production.js') }}"></script>{% endblock %}
+{% block scripts %}<script type="module" src="{{ asset('site/js/learn.js') }}"></script>{% endblock %}

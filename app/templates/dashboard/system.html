@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% from "dashboard/_macros.html" import status_badge, dependency_table, freshness_badge %}
+{% block title %}System health · PSX Intelligence{% endblock %}
+{% block content %}
+<h1 class="h3">System health</h1>
+<p class="text-muted">Overall {{ status_badge(overall) }}</p>
+
+{% if stuck_jobs %}
+<div class="alert alert-warning" role="alert">
+  <strong>{{ stuck_jobs|length }} job(s) appear stuck</strong> — queued for over 15 minutes or running beyond the
+  task time limit. Check that a Celery worker is running and consuming the queue.
+  <ul class="mb-0 small">
+    {% for j in stuck_jobs %}<li><code>{{ j.job_type }}</code> {{ j.status.value }} since
+      {{ j.updated_at.strftime('%Y-%m-%d %H:%M UTC') }} ({{ j.id }})</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header">Dependencies</div>
+      <div class="card-body">{{ dependency_table(checks) }}</div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header">Failed jobs (latest 10)</div>
+      <div class="card-body">
+        {% if failed_jobs %}
+        <ul class="list-unstyled mb-0">
+          {% for j in failed_jobs %}
+          <li class="mb-2">
+            {{ status_badge(j.status.value) }} <code>{{ j.job_type }}</code>
+            <span class="small text-muted">{{ j.created_at.strftime('%Y-%m-%d %H:%M UTC') }}</span>
+            <div class="small">{{ j.error_category }}: {{ j.error_message }}</div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted mb-0">No failed jobs.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header">Data sources</div>
+  <div class="card-body">
+    {% if market_error %}
+      <p class="text-danger mb-0">{{ market_error }}</p>
+    {% else %}
+    <p class="small mb-2">
+      {{ source_label }} ·
+      {% if integration.ready %}{{ status_badge('ok') }} enabled{% else %}{{ status_badge('unknown') }}
+        {{ integration.problems|join('; ') }}{% endif %}
+      · scheduled: {{ 'on' if integration.scheduled else 'off' }}
+    </p>
+    <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Dataset</th><th>Freshness</th><th>Last successful sync (UTC)</th><th>Last run</th></tr></thead>
+      <tbody>
+      {% for f in [bars_fresh, quotes_fresh] %}
+        <tr>
+          <td>{{ f.dataset|replace('_', ' ') }}</td>
+          <td>{{ freshness_badge(f.state) }}{% if f.detail %}<div class="small text-muted">{{ f.detail }}</div>{% endif %}</td>
+          <td>{{ f.last_successful_run_at.strftime('%Y-%m-%d %H:%M') if f.last_successful_run_at else '—' }}</td>
+          <td>
+            {% if f.last_run %}
+              {{ status_badge({'succeeded': 'succeeded', 'partially_succeeded': 'degraded', 'failed': 'failed',
+                               'running': 'running'}[f.last_run.status.value]) }}
+              <span class="small">{{ f.last_run.status.value }}</span>
+              {% if f.last_run.error_summary %}
+                <div class="small text-muted">{{ f.last_run.error_category }}: {{ f.last_run.error_summary }}</div>
+              {% endif %}
+            {% else %}<span class="text-muted">never run</span>{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header">Research pipeline &amp; models</div>
+  <div class="card-body small">
+    {% if not research %}<p class="text-danger mb-0">Research status could not be loaded.</p>{% else %}
+    <div class="row">
+      <div class="col-lg-5">
+        <dl class="row mb-0">
+          <dt class="col-6">Last pipeline run</dt><dd class="col-6">{% if research.pipeline %}{{ status_badge({'succeeded':'succeeded','partial':'degraded','failed':'failed','skipped':'unknown','running':'running'}[research.pipeline.status]) }} session {{ research.pipeline.session or '—' }}{% else %}never{% endif %}</dd>
+          <dt class="col-6">Last forecast stored</dt><dd class="col-6">{{ (research.last_forecast_at or 'never')[:16] }}</dd>
+          <dt class="col-6">Forecasts awaiting outcome</dt><dd class="col-6">{{ research.pending_forecasts }}</dd>
+          <dt class="col-6">Last matured evaluation</dt><dd class="col-6">{{ (research.last_evaluation_at or 'none yet')[:16] }}</dd>
+          <dt class="col-6">Last training</dt><dd class="col-6">{% if research.last_training %}{{ research.last_training.at[:16] }} ({{ research.last_training.decision }}){% else %}never{% endif %}</dd>
+          <dt class="col-6">Approved model versions</dt><dd class="col-6">{{ research.approved_models }}</dd>
+          <dt class="col-6">Last adaptation decision</dt><dd class="col-6">{% if research.last_adaptation_decision %}{{ research.last_adaptation_decision.type|replace('_',' ') }}: {{ research.last_adaptation_decision.decision }}<div class="text-muted">{{ research.last_adaptation_decision.reason }}</div>{% else %}none{% endif %}</dd>
+          <dt class="col-6">Open data-quality findings</dt><dd class="col-6">{% for sev, n in research.open_data_quality.items() %}{{ sev }} {{ n }}{{ ', ' if not loop.last }}{% else %}none{% endfor %}</dd>
+        </dl>
+      </div>
+      <div class="col-lg-7">
+        {% if research.pipeline %}<p class="mb-1"><strong>Workflow steps</strong> (a model is not "healthy" just because a step ran: see Forecasts &amp; models for evidence)</p>
+        <table class="table table-sm mb-0"><thead><tr><th>Step</th><th>Status</th><th>Detail</th></tr></thead><tbody>
+          {% for s in research.pipeline.steps %}<tr><td>{{ s.step|replace('_',' ') }}</td><td>{{ s.status }}</td><td class="text-muted">{{ s.message or '' }}</td></tr>{% endfor %}
+        </tbody></table>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header">Recent jobs</div>
+  <div class="card-body">
+    {% if recent_jobs %}
+    <div class="table-responsive">
+    <table class="table table-sm">
+      <thead><tr><th>Created (UTC)</th><th>Type</th><th>Status</th><th>Attempts</th><th>Duration</th><th>Job ID</th></tr></thead>
+      <tbody>
+      {% for j in recent_jobs %}
+        <tr>
+          <td>{{ j.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          <td><code>{{ j.job_type }}</code></td>
+          <td>{{ status_badge(j.status.value) }}</td>
+          <td>{{ j.attempts }}</td>
+          <td>{{ '%d ms'|format(j.duration_ms) if j.duration_ms is not none else '—' }}</td>
+          <td class="small text-muted">{{ j.id }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">No jobs have been run.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

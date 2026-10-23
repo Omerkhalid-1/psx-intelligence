@@ -1,0 +1,98 @@
+# Local / single-host deployment. Usage:
+#   cp .env.example .env   # then set SECRET_KEY, ADMIN_API_TOKEN, POSTGRES_PASSWORD
+#   docker compose up --build
+# Services read DATABASE_URL etc. from the `environment` blocks below (which override .env
+# for in-network hostnames).
+
+x-app: &app
+  build: .
+  env_file: .env
+  environment:
+    DATABASE_URL: postgresql+psycopg://psx:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/psx_intelligence
+    REDIS_URL: redis://redis:6379/0
+    CELERY_BROKER_URL: redis://redis:6379/1
+    CELERY_RESULT_BACKEND: redis://redis:6379/2
+    MARKET_DATA_IMPORT_DIR: /srv/app/data/imports
+    PSXDATA_API_URL: http://psx-api:8000
+  volumes:
+    - ./data/imports:/srv/app/data/imports:ro
+    - artifacts:/srv/app/artifacts
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  db:
+    image: postgres:17.6
+    environment:
+      POSTGRES_USER: psx
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: psx_intelligence
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U psx -d psx_intelligence"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.4
+    command: ["redis-server", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # psxdata-api: REST wrapper around the psxdata library (reads the PSX Data Portal).
+  # Pinned tag (never `latest`); reachable only on the compose network, not published.
+  psx-api:
+    image: mtauha/psxdata-api:0.5.0
+    environment:
+      REDIS_URL: redis://redis:6379/3
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  migrate:
+    <<: *app
+    command: ["flask", "--app", "wsgi", "db", "upgrade"]
+    restart: "no"
+
+  api:
+    <<: *app
+    ports:
+      - "127.0.0.1:8000:8000"   # bound to localhost: the dashboard has no user auth yet
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    <<: *app
+    command: ["celery", "-A", "app.tasks.worker:celery", "worker", "--loglevel", "INFO", "--concurrency", "2"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  beat:
+    <<: *app
+    command: ["celery", "-A", "app.tasks.worker:celery", "beat", "--loglevel", "INFO", "--schedule", "/tmp/celerybeat-schedule"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:
+  artifacts:

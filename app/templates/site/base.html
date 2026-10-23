@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}PSX Intelligence{% endblock %}</title>
+  <meta name="description" content="{% block description %}Pakistan Stock Exchange market pulse, indicator dashboards explained in plain language, and PSX company news search.{% endblock %}">
+  <meta name="theme-color" content="#04060d">
+  {% if static_mode %}<meta http-equiv="Content-Security-Policy" content="{{ static_csp }}">
+  <meta name="referrer" content="same-origin">{% endif %}
+  <link rel="icon" href="{{ asset('site/img/mark.svg') }}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="{{ asset('site/css/site.css') }}">
+</head>
+<body data-page="{{ page }}" data-static="{{ '1' if static_mode else '0' }}" data-base="{{ request.script_root }}">
+<a class="skip-link" href="#main">Skip to content</a>
+<canvas id="bg-field" aria-hidden="true"></canvas>
+<div class="scanline" aria-hidden="true"></div>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="{{ url_for('site.home') }}" aria-label="PSX Intelligence home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><defs><linearGradient id="bm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#46d9ff"/><stop offset="1" stop-color="#9b7bff"/></linearGradient></defs>
+          <path d="M16 2 28 9v14l-12 7L4 23V9z" fill="none" stroke="url(#bm)" stroke-width="2"/>
+          <path d="M8 20l5-6 4 3 7-8" fill="none" stroke="#46d9ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span>PSX Intelligence<br><small>MARKET · INDICATORS · NEWS</small></span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+    <div class="nav-menu" id="nav-menu">
+      <nav class="nav-links" aria-label="Main">
+        {% set links = [('site.home', 'Pulse'), ('site.learn', 'How stocks work'), ('site.news', 'PSX news'), ('site.engine_page', 'Engine')] %}
+        {% for endpoint, label in links %}
+          <a href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ label }}</a>
+        {% endfor %}
+      </nav>
+      <div class="nav-stocks">
+        <button type="button" class="nav-stocks-btn {% if request.endpoint == 'site.stock' %}active{% endif %}" aria-expanded="false" aria-controls="stocks-menu">
+          Stocks <span class="mono tiny muted">{{ tracked|length }}</span> <span aria-hidden="true">▾</span></button>
+        <div class="mega" id="stocks-menu" hidden>
+          {% for sector, rows in watch_meta()|groupby('sector') %}
+            <div class="mega-group">
+              <div class="label">{{ sector }}</div>
+              {% for r in rows %}
+                <a href="{{ url_for('site.stock', symbol=r.symbol) }}" {% if request.endpoint == 'site.stock' and symbol == r.symbol %}aria-current="page"{% endif %}>
+                  <b class="mono">{{ r.symbol }}</b><span>{{ r.name }}</span></a>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <form class="nav-search" role="search" action="{{ url_for('site.news') }}" method="get">
+        <label class="visually-hidden" for="nav-q">Search PSX news by symbol</label>
+        <span class="icon" aria-hidden="true">⌕</span>
+        <input id="nav-q" name="symbol" autocomplete="off" spellcheck="false" maxlength="12" placeholder="Symbol news… e.g. LUCK">
+      </form>
+    </div>
+  </div>
+</header>
+
+{% if static_mode and site_build %}
+<div class="snapshot-bar"><div class="wrap small">
+  <span class="live-dot" aria-hidden="true"></span> Daily snapshot · market data to session <b class="mono">{{ site_build.latest_session }}</b>
+  · built {{ site_build.built_at_pkt }} PKT · rebuilt automatically after each PSX close
+</div></div>
+{% endif %}
+<main id="main">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site">
+  <div class="wrap cols">
+    <div>
+      <div class="brand" style="margin-bottom:10px">PSX Intelligence</div>
+      <p>Educational research tool. Indicators describe what prices and volume did; they are not predictions,
+        recommendations or investment advice. In this project's walk-forward tests, models built on these indicators
+        did not forecast returns better than assuming no change.</p>
+    </div>
+    <div>
+      <div class="label">Data</div>
+      <p>Daily bars and quotes: self-hosted psxdata-api reading the PSX Data Portal (subject to PSX terms).
+        Prices are split/bonus-adjusted; cash dividends are not. Headlines: Google News RSS (titles and links only).</p>
+    </div>
+    <div>
+      <div class="label">Credits</div>
+      <p>Charts by <a href="https://www.tradingview.com/" rel="noopener noreferrer" target="_blank">TradingView</a>
+        Lightweight Charts™ (Apache-2.0). Copyright © TradingView, Inc.</p>
+      <p><a href="{{ url_for('site.engine_page') }}">Engine &amp; parameters</a>{% if not static_mode %} · <a href="{{ url_for('dashboard.index') }}">Operations</a>{% endif %}</p>
+    </div>
+  </div>
+</footer>
+
+<script id="page-data" type="application/json">{{ page_data|tojson }}</script>
+{% block vendor %}{% endblock %}
+{# Same URL as the page modules' `import "./core.js"`, so the browser evaluates one module instance. #}
+<script type="module" src="{{ url_for('static', filename='site/js/core.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

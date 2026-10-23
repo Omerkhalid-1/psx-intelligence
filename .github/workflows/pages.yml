@@ -1,0 +1,151 @@
+# Publishes the static edition of the website to GitHub Pages.
+#
+# Each run builds everything from scratch on the runner: a throwaway PostgreSQL + Redis, the pinned
+# self-hosted psxdata-api, full daily-bar history, corporate actions (config/corporate_actions.yaml),
+# quality checks, then `flask --app wsgi site export`. Nothing persists between runs and no secret is
+# needed: the app's SECRET_KEY / ADMIN_API_TOKEN are random per run and never leave the runner.
+#
+# If any step fails (PSX unreachable, engine self-check failure, broken link), nothing is deployed and
+# the previously published site stays online.
+#
+# Repository settings: Settings -> Pages -> Source: "GitHub Actions".
+# Optional repository variables (Settings -> Secrets and variables -> Actions -> Variables):
+#   PSXDATA_SYMBOLS   watchlist override (must include KSE100)
+#   SITE_BASE_PATH    URL prefix; default "/<repository name>". Use "" for a custom domain or <user>.github.io.
+
+name: Publish website
+
+on:
+  schedule:
+    - cron: "45 13 * * 1-5"   # 18:45 PKT (UTC+5), Monday-Friday, after the PSX close
+  workflow_dispatch:
+    inputs:
+      skip_news:
+        description: "Skip the per-symbol news files (no Google News requests)"
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths: ["app/**", "config/**", "migrations/**", "requirements.txt", "services/psxdata-api/**",
+            ".github/workflows/pages.yml"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_USER: psx
+          POSTGRES_PASSWORD: ci-throwaway
+          POSTGRES_DB: psx_intelligence
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U psx -d psx_intelligence" --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7.4
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      APP_ENV: production
+      LOG_FORMAT: text
+      LOG_LEVEL: WARNING
+      DATABASE_URL: postgresql+psycopg://psx:ci-throwaway@localhost:5432/psx_intelligence
+      REDIS_URL: redis://localhost:6379/0
+      CELERY_BROKER_URL: redis://localhost:6379/1
+      CELERY_RESULT_BACKEND: redis://localhost:6379/2
+      PSXDATA_ENABLED: "true"
+      PSXDATA_API_URL: http://127.0.0.1:8100
+      PSXDATA_SYMBOLS: ${{ vars.PSXDATA_SYMBOLS || 'SYS,FFC,MEBL,MARI,LUCK,DGKC,FCCL,OGDC,PPL,HBL,UBL,MCB,NBP,EFERT,HUBC,KEL,PSO,TRG,INDU,KSE100' }}
+      NEWS_SENTIMENT_MODEL: lexicon_v1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate throwaway app secrets
+        run: |
+          key=$(openssl rand -hex 32); token=$(openssl rand -hex 24)
+          echo "::add-mask::$key"; echo "::add-mask::$token"
+          echo "SECRET_KEY=$key" >> "$GITHUB_ENV"; echo "ADMIN_API_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Start psxdata-api (pinned v0.5.0)
+        run: |
+          PYTHON=python nohup services/psxdata-api/run.sh > psxdata-api.log 2>&1 &
+          for i in $(seq 1 120); do
+            curl -fsS http://127.0.0.1:8100/health >/dev/null 2>&1 && { echo "psxdata-api is up"; exit 0; }
+            sleep 2
+          done
+          echo "::error::psxdata-api did not start"; cat psxdata-api.log; exit 1
+
+      - name: Database schema
+        run: flask --app wsgi db upgrade
+
+      - name: Daily bars (full history)
+        run: flask --app wsgi ingest-psx bars --full --sync
+
+      - name: Corporate actions and data quality
+        run: |
+          flask --app wsgi research sync-corporate-actions --actor github-actions
+          flask --app wsgi research quality
+
+      - name: Export static site
+        run: |
+          base="${{ vars.SITE_BASE_PATH }}"
+          if [ -z "${{ vars.SITE_BASE_PATH }}" ] && [ "${{ vars.SITE_BASE_PATH_EMPTY }}" != "true" ]; then
+            base="/${{ github.event.repository.name }}"
+          fi
+          news_flag=""
+          if [ "${{ inputs.skip_news }}" = "true" ]; then news_flag="--no-news"; fi
+          flask --app wsgi site export --out build/site --base-path "$base" --report export-report.json $news_flag
+          python - <<'PY'
+          import json
+          r = json.load(open("export-report.json"))
+          for w in r.get("warnings", []):
+              print(f"::warning::{w}")
+          with open(__import__("os").environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(f"### Site export\n\n- pages: {r['pages']}, data files: {r['data_files']}\n"
+                      f"- market data to session **{r['latest_session']}**\n- base path: `{r['base'] or '/'}`\n"
+                      + "".join(f"- warning: {w}\n" for w in r.get("warnings", [])))
+          PY
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/site
+
+      - name: Keep logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            psxdata-api.log
+            export-report.json
+          if-no-files-found: ignore
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

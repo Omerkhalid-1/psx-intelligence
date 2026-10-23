@@ -1,0 +1,135 @@
+article_id,symbol,title,relevant,sentiment,reviewer,sample
+60,SYS,Systems Limited,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+1443,SYS,"CMS Info Systems reports highest-ever quarterly services revenue at ₹ 625 Cr, ₹ 500 Cr new order wins",0,na,claude-ai (not human-verified),sample_1_seed_s
+505,SYS,Stock to buy: Anand Rathi predicts Titagarh Rail Systems shares to rise 27% in 3 months. Here's why,0,na,claude-ai (not human-verified),sample_1_seed_s
+1198,SYS,Kalyani Strategic Systems Limited & Paramount Unveil Simha 4×4 — Next-Generation Modular Multipurpose Vehicle For The Global Market,0,na,claude-ai (not human-verified),sample_1_seed_s
+987,SYS,Organic Recycling Systems: Stock in focus after company strengthens green chemicals vertical with new acquisition,0,na,claude-ai (not human-verified),sample_1_seed_s
+1568,SYS,"Austere Systems Limited Approves Final Dividend for the Financial Year Ended March 31, 2026",0,na,claude-ai (not human-verified),sample_1_seed_s
+564,SYS,Systems Limited Considers Acquisition of an IT Services Firm,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+1309,SYS,Malawi Defence Force Command and Staff College Partners with Sparc Systems Limited to Enhance Cybersecurity,0,na,claude-ai (not human-verified),sample_1_seed_s
+848,SYS,"China Maple Leaf Educational Systems Limited's Equity Buyback announced on February 21, 2025, has expired with 103,356,000 shares, representing 3.53% for HKD 37.97 million.",0,na,claude-ai (not human-verified),sample_1_seed_s
+1195,SYS,"Enghouse Systems Limited Reports Earnings Results for the Second Quarter and Six Months Ended April 30, 2026",0,na,claude-ai (not human-verified),sample_1_seed_s
+100,SYS,Prodrive acquires stake in HCI Systems Limited,0,na,claude-ai (not human-verified),sample_1_seed_s
+1482,SYS,Admach Systems Limited Receives Purchase Order from A Domestic Customer in the Non-Destructive Testing Industry,0,na,claude-ai (not human-verified),sample_1_seed_s
+226,SYS,Tata Power Solar Systems Limited and Union Bank Renew Partnership to Accelerate Rooftop Solar Adoption Among Residential Consumers,0,na,claude-ai (not human-verified),sample_1_seed_s
+1211,SYS,There Are Some Holes In R M Drip and Sprinklers Systems' (NSE:RMDRIP) Solid Earnings Release,0,na,claude-ai (not human-verified),sample_1_seed_s
+573,SYS,Public companies are Ramco Systems Limited's (NSE:RAMCOSYS) biggest owners and were rewarded after market cap rose by ₹2.8b last week,0,na,claude-ai (not human-verified),sample_1_seed_s
+421,SYS,KT Bank Partners Systems Limited for Innovation,1,positive,claude-ai (not human-verified),sample_1_seed_s
+456,SYS,"Lippi Systems Limited Reports Earnings Results for the Fourth Quarter and Full Year Ended March 31, 2025",0,na,claude-ai (not human-verified),sample_1_seed_s
+854,SYS,Sigma Advanced Systems Limited Announces Postal Ballot for Director Appointment and Re-designation,0,na,claude-ai (not human-verified),sample_1_seed_s
+1479,SYS,Organic Recycling Systems arm bags Rs 167 crore BPCL contracts for CBG plants,0,na,claude-ai (not human-verified),sample_1_seed_s
+782,SYS,ERP Soft Systems Company Secretary & Compliance Officer Resigns Due to Personal Reasons,0,na,claude-ai (not human-verified),sample_1_seed_s
+665,SYS,TATA Advanced Systems and Airbus to Establish India's Maiden Private Sector Helicopter Assembly Line for H125,0,na,claude-ai (not human-verified),sample_1_seed_s
+1547,SYS,DCX Systems shareholders pass all resolutions at 15th AGM,0,na,claude-ai (not human-verified),sample_1_seed_s
+408,SYS,Court order stalls Reps’ probe into Miden Systems’ petition against Sterling Bank,0,na,claude-ai (not human-verified),sample_1_seed_s
+833,SYS,Apollo Micro Systems Bags Rs 258 Mn Defence Order; Emerges As Lowest Bidder For PSU,0,na,claude-ai (not human-verified),sample_1_seed_s
+962,SYS,DCX Systems bags ₹68-crore order from HAL for airborne systems,0,na,claude-ai (not human-verified),sample_1_seed_s
+21,SYS,Kalyani Strategic Systems signs MoU with Rolls-Royce Marine for development of naval propulsion systems,0,na,claude-ai (not human-verified),sample_1_seed_s
+1705,FFC,"FFC makes Rs22.6bn profit in 3QCY24, but holds off on dividend amid merger plans",1,mixed,claude-ai (not human-verified),sample_1_seed_s
+1728,FFC,FFC Q4 earnings up 90%,1,positive,claude-ai (not human-verified),sample_1_seed_s
+1684,FFC,Waseem Ajmal Chaudhary resigns as director of FFC,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+1687,FFC,FFC opens SONA Centres in Sharaqpur and Muridke,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+1815,FFC,Fauji Fertilizer Issues 15.9 Million Shares to Fauji Foundation,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+1798,FFC,"Hubco, FFC, Thal announce completion of Thar Energy, ThalNova power projects under CPEC",1,positive,claude-ai (not human-verified),sample_1_seed_s
+1740,FFC,FFC signs MOUs with 4 banks for clean farmer financing,1,positive,claude-ai (not human-verified),sample_1_seed_s
+1707,FFC,Fauji Fertilizer acquires additional stake in Agritech Limited,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+1727,FFC,FFC initiates acceptance period for its revised offer to acquire 35.6% of Agritech,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2378,FFC,FFC harvests success with KMI-30 entry,1,positive,claude-ai (not human-verified),sample_1_seed_s
+1649,FFC,"FFC MD & CEO visits Goth Machhi, Mirpur Mathelo",1,neutral,claude-ai (not human-verified),sample_1_seed_s
+1805,FFC,"Fauji Fertilizer Secures ""Best Corporate Excellence Award"" at MAP Awards",1,positive,claude-ai (not human-verified),sample_1_seed_s
+1878,FFC,"FFC, Engro drive urea sales past last September's total",1,positive,claude-ai (not human-verified),sample_1_seed_s
+1850,FFC,FFC Announces Financial Results of First Quarter 2026,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+1733,FFC,FFC reports Rs 85.5 billion annual profit following merger with FFBL,1,positive,claude-ai (not human-verified),sample_1_seed_s
+1814,FFC,Fauji Foundation Raises Stake in Fauji Fertilizer Company to Over 44%,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+1849,FFC,Pakistan’s first coal-to-urea project planned as FFC signs $1.12bn FEED agreement with Chinese firm,1,positive,claude-ai (not human-verified),sample_1_seed_s
+1715,FFC,Fauji Fertilizer raises offer price to acquire Agritech shares amidst competition,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2275,MEBL,Meezan Bank - Video Testimonial,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2635,MEBL,IHC Dismisses Meezan Bank Petition Against Super Tax,1,negative,claude-ai (not human-verified),sample_1_seed_s
+2563,MEBL,Meezan Bank wins Best Bank award for sixth time,1,positive,claude-ai (not human-verified),sample_1_seed_s
+2159,MEBL,Toyota Yaris 1.3 CVT three years easy installment deal by Meezan Bank [Sept 2024],1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2165,MEBL,Meezan Bank’s net return grows by 52% in 1HCY24 Breaking,1,positive,claude-ai (not human-verified),sample_1_seed_s
+2399,MEBL,Meezan Bank Appoints Dr. Syed Amir Ali as New President and CEO,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2054,MEBL,Suzuki Alto Installment Plan with Meezan Bank Jan 2024,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2173,MEBL,Hyundai Elantra 1.6 five-year easy installment plan by Meezan Bank,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2205,MEBL,Meezan bank denies data breach allegations,1,negative,claude-ai (not human-verified),sample_1_seed_s
+1942,MEBL,Toyota Yaris Price and Instalment Plan May 2023 – Meezan Bank,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2266,MEBL,Kia Sportage L Discount: Save Big with Meezan Bank’s Scheme,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+1988,MEBL,Honda CG 125 2024 installment plans with Meezan Bank,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2307,MEBL,Meezan Bank first in Pakistan to launch Visa eSIM,1,positive,claude-ai (not human-verified),sample_1_seed_s
+1957,MEBL,Amir Ali appointed as Deputy CEO of Meezan Bank Limited,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2207,MEBL,Meezan Bank issues Customer advisory and denies data breach,1,negative,claude-ai (not human-verified),sample_1_seed_s
+2082,MEBL,Meezan Bank VISA Debit Card replacement charges update March 2024,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2074,MEBL,"SBP grants NOC to AKBL, MEBL for exchange company",1,positive,claude-ai (not human-verified),sample_1_seed_s
+2182,MEBL,Meezan Bank signs new strategic partnership with ITFC Breaking,1,positive,claude-ai (not human-verified),sample_1_seed_s
+2752,MARI,Mari Petroleum announces major oil discovery in Sindh,1,positive,claude-ai (not human-verified),sample_1_seed_s
+2863,MARI,"Mari Petroleum, OGDCL contribute billions to Ghotki welfare schemes: Senate told",1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2761,MARI,Faheem Haider reappointed as managing director of Mari Petroleum,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2856,MARI,"Mari Energies, Ghani Chemical join hands for emissions reduction project",1,positive,claude-ai (not human-verified),sample_1_seed_s
+2709,MARI,Mari Petroleum Commences Gas Production at Ghazij-2 Well in Daharki,1,positive,claude-ai (not human-verified),sample_1_seed_s
+2703,MARI,"PSO keen on OGDCL, Mari Petroleum shares",1,neutral,claude-ai (not human-verified),sample_1_seed_s
+1812,MARI,Govt approves Mari field gas allocation for fertilizer plants,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2690,MARI,Mari Petroleum Posts Highest-Ever Profit of Rs. 56.1 Billion in FY23,1,positive,claude-ai (not human-verified),sample_1_seed_s
+2712,MARI,"Mari Petroleum announces new gas discovery, joins ‘billion-dollar club’ at Pakistan stock market",1,positive,claude-ai (not human-verified),sample_1_seed_s
+2877,MARI,Mari Energies to complete 5MW data center in Islamabad next year,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2796,MARI,"Mari Petroleum helicopter crashes, killed six passengers",1,negative,claude-ai (not human-verified),sample_1_seed_s
+2697,MARI,Mari Petroleum makes gas discovery in Pakistan’s Sindh amid depleting reserves,1,positive,claude-ai (not human-verified),sample_1_seed_s
+2667,MARI,"Mari Petroleum successfully completes commissioning of facility in Daharki, Sindh",1,positive,claude-ai (not human-verified),sample_1_seed_s
+2743,MARI,Mari Petroleum reports 57% profit growth in 1HFY24 Breaking,1,positive,claude-ai (not human-verified),sample_1_seed_s
+2733,MARI,Mari Petroleum Discovers Gas Reserves in Block-28 Balochistan,1,positive,claude-ai (not human-verified),sample_1_seed_s
+2717,MARI,Mari Petroleum Successfully Drills 3rd Gas Well in Daharki,1,positive,claude-ai (not human-verified),sample_1_seed_s
+2789,MARI,Mari Petroleum to invest Rs10bn in tech subsidiary,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2663,MARI,"Mari completes commissioning, testing of gas processing facilities in Daharki, Sindh",1,positive,claude-ai (not human-verified),sample_1_seed_s
+4314,MARKET,KSE-100 slips 353 points on lower activity,1,negative,claude-ai (not human-verified),sample_1_seed_s
+2419,MARKET,KSE-100 Index Falls Amid Interest Rate and Geopolitical Concerns,1,negative,claude-ai (not human-verified),sample_1_seed_s
+3531,MARKET,"New record high at PSX: KSE-100 Index settles above 152,000",1,positive,claude-ai (not human-verified),sample_1_seed_s
+3709,MARKET,"KSE-100 plunges over 4,000 points amid oil price surge",1,negative,claude-ai (not human-verified),sample_1_seed_s
+3443,MARKET,PSX halted amid major selling pressure,1,negative,claude-ai (not human-verified),sample_1_seed_s
+3112,MARKET,"KSE-100 Index shatters 54,000 ceiling before profit-taking pushes it back into red",1,mixed,claude-ai (not human-verified),sample_1_seed_s
+3983,MARKET,PSX closes lower as early rally fades on profit-taking,1,negative,claude-ai (not human-verified),sample_1_seed_s
+3038,MARKET,"KSE-100 surges over 900 points to surpass 48,000-mark after 24-month hiatus",1,positive,claude-ai (not human-verified),sample_1_seed_s
+4211,MARKET,"PSX: selling continues, KSE-100 settles nearly 700 points lower",1,negative,claude-ai (not human-verified),sample_1_seed_s
+3724,MARKET,"KSE-100 recovers 5,159 points on value-hunting",1,positive,claude-ai (not human-verified),sample_1_seed_s
+4063,MARKET,"Steep decline at PSX, KSE-100 sheds over 3.5% as US reimposes naval blockade on Iran",1,negative,claude-ai (not human-verified),sample_1_seed_s
+4303,MARKET,"PSX: KSE-100 settles nearly 2,300 points lower on political uncertainty, higher oil prices",1,negative,claude-ai (not human-verified),sample_1_seed_s
+3131,MARKET,"800-point rally pushes PSX past 64,000",1,positive,claude-ai (not human-verified),sample_1_seed_s
+3679,MARKET,PSX rebounds sharply amid rollover relief,1,positive,claude-ai (not human-verified),sample_1_seed_s
+1730,MARKET,PSX revises list of eligible securities for trading in DFC market,1,neutral,claude-ai (not human-verified),sample_1_seed_s
+4304,MARKET,"PSX: KSE-100 sheds over 1,100 points on selling pressure",1,negative,claude-ai (not human-verified),sample_1_seed_s
+2926,MARKET,"PSX ends nearly flat after wild swings as investors weigh oil prices, global cues",1,neutral,claude-ai (not human-verified),sample_1_seed_s
+2585,MARKET,"PSX rises back above 170,000 as oil eases",1,positive,claude-ai (not human-verified),sample_1_seed_s
+4273,MARKET,"KSE-100 rebounds over 1,600 points as oil prices ease",1,positive,claude-ai (not human-verified),sample_1_seed_s
+3412,MARKET,Shares at PSX’s benchmark index gain over 200 points in intraday,1,positive,claude-ai (not human-verified),sample_1_seed_s
+663,SYS,"Systems Limited to establish UK subsidiary, expand global footprint",1,positive,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+621,SYS,Systems Limited reports 46% jump in 9MFY25 earnings,1,positive,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+622,SYS,KTrade tips Systems Limited for 43% gain by June 2026,1,positive,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+474,SYS,Systems Limited Suspends Trading on PSX Due to Stock Split,1,neutral,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+94,SYS,Systems Limited and IBM Showcase Cutting-Edge Technology at ‘Go Limitless’,1,neutral,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+126,SYS,Systems Limited consecutively wins ‘Forbes Asia’s Best Under A Billion Company and Asiamoney Award 2023’,1,positive,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+220,SYS,Systems Limited wins award,1,positive,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+662,SYS,"Systems Limited posts record nine-month profit, surpassing full-year 2024",1,positive,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+796,SYS,Systems Ltd will acquire Confiz,1,neutral,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+526,SYS,Systems Limited explores potential acquisition of IT and IT-enabled services business,1,neutral,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+1092,SYS,LHC greenlights Systems Limited’s amalgamation with Confiz,1,positive,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+1355,SYS,DIB Pakistan Embarks on a Temenos Core Banking Modernization Program with Systems Limited,1,positive,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+259,SYS,"Systems Limited Hosts U.S. Ambassador to Pakistan, His Excellency Mr. Donald Blome",1,neutral,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+512,SYS,Pakistan’s Systems Limited explores acquisition in IT and ITES sector,1,neutral,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+565,SYS,Systems Limited mulling setting up new company in UK,1,neutral,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+109,SYS,Systems Limited Launches IT Mustakbil Training Program Batch 2 with Ali Institute of Education,1,neutral,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+1080,SYS,U Microfinance Bank Accelerates Digital Transformation with Temenos & Systems Limited,1,positive,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+260,SYS,Systems Limited signs agreement to license and develop Temenos country model banks for 5 countries in APAC,1,positive,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+290,SYS,Systems Limited wins ‘Forbes Asia’s Best Under a Billion 2024’,1,positive,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+473,SYS,Systems Limited to Suspend Trading from May 29 to Implement Stock Split,1,neutral,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+1583,SYS,J.P. Morgan Remains a Buy on Silex Systems Limited (SILXF),0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+860,SYS,Sigma Advanced Systems Limited Announces Q3FY26 Financial Results with Strong Standalone Performance,0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+1106,SYS,"Titagarh Rail Systems Limited Reports Earnings Results for the Fourth Quarter and Full Year Ended March 31, 2026",0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+540,SYS,"Vitel Wireless, SLOT Systems partner on SIM, gadgets distribution",0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+359,SYS,Tata AutoComp Systems appoints Manoj Kolhatkar as MD & CEO,0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+449,SYS,Techtron Systems Ltd Appoints Chukwudi Egbe Managing Director,0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+681,SYS,"IIT Madras, Indian Navy & Apollo Micro Systems’ strategic collaboration to accelerate indigenous defence technology development | Indian",0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+1559,SYS,"Thales, Kalyani Strategic Systems Sign Alliance to Make 70-mm Rockets in India",0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+718,SYS,TD Power Systems Secures Extended Court Order to Limit Union Strike Activities,0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+903,SYS,"TD Power Systems Limited Announces Key Senior Management Changes Effective March 1, 2026",0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+1336,SYS,C2C Advanced Systems uploads H2 FY26 earnings call audio recording,0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+712,SYS,Exicom Tele-Systems Reports Strong Q2 FY26 Revenue Growth Despite Consolidated Losses,0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+1585,SYS,Ramco Systems (NSEI:RAMCOSYS) Stock Forecast & Analyst Predictions,0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2
+401,SYS,"Titagarh Rail Systems announces leadership restructuring, launches new shipbuilding and rail safety division..",0,na,claude-ai (not human-verified),sample_2_heldout_seed_heldout2

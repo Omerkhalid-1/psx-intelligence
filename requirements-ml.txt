@@ -1,0 +1,4 @@
+# Optional: FinBERT headline sentiment (NEWS_SENTIMENT_MODEL=finbert). ~1.7 GB with the model.
+# Install: .venv/bin/pip install -r requirements-ml.txt
+torch==2.5.1
+transformers==4.46.3
