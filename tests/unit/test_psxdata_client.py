@@ -185,3 +185,27 @@ def test_duplicate_dates_keep_first():
 def test_values_are_quantised_to_storage_scale():
     observations, _ = normalize("SYS", [bar("2026-10-13", 10.1234567, open_=10, high=11, low=9)])
     assert observations[0].close == Decimal("10.123457")
+
+
+# -- in-progress session -------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("pkt_clock,expect_today", [("12:35", False), ("16:59", False), ("17:00", True),
+                                                    ("21:00", True)])
+def test_todays_bar_is_skipped_until_the_session_is_final(pkt_clock, expect_today):
+    """A sync during trading hours must not store today's partial bar as a finished session."""
+    from datetime import datetime
+    from datetime import time as dt_time
+
+    from app.utils.time import PSX_TZ
+
+    hh, mm = map(int, pkt_clock.split(":"))
+    now = datetime(2026, 10, 27, hh, mm, tzinfo=PSX_TZ)
+    session, _ = fake_session((200, bars_body(bar("2026-10-26", 100.0), bar("2026-10-27", 101.0))))
+    c = PsxDataApiClient(base_url="http://psxdata-api.invalid", timeout_seconds=30, session=session,
+                         session_final_after=dt_time(17, 0), clock=lambda: now)
+    result = c.fetch_daily_bars("SYS")
+    dates = [o.session_date.isoformat() for o in result.observations]
+    assert dates == (["2026-10-26", "2026-10-27"] if expect_today else ["2026-10-26"])
+    assert result.rejected == []  # an in-progress session is expected, not an error
+    assert ("in_progress_session_skipped" in result.metadata) is (not expect_today)

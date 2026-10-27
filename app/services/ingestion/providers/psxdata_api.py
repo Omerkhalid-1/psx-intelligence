@@ -24,7 +24,8 @@ import logging
 import re
 import time
 from collections.abc import Callable, Mapping
-from datetime import date
+from datetime import date, datetime, timedelta
+from datetime import time as dt_time
 from decimal import Decimal, InvalidOperation
 from email.utils import parsedate_to_datetime
 from typing import Any
@@ -43,7 +44,7 @@ from app.services.ingestion.providers.base import (
     QuoteObservation,
     RejectedRecord,
 )
-from app.utils.time import psx_local_date, utcnow
+from app.utils.time import PSX_TZ, psx_local_date, utcnow
 
 log = logging.getLogger(__name__)
 
@@ -57,6 +58,10 @@ MAX_ABS_VALUE = Decimal("1e13")
 MAX_ABS_PERCENT = Decimal("99999")
 # Match the numeric(…, 6) / numeric(…, 2) storage scales so a re-fetch of an unchanged value
 # compares equal to what was stored (no spurious revisions from rounding).
+def time_of_day(raw: str) -> dt_time:
+    return dt_time.fromisoformat(raw.strip())
+
+
 # A listed instrument symbol: letters/digits only (futures carry a "-MON" suffix and are excluded).
 LISTING_SYMBOL = re.compile(r"[A-Z0-9]{1,12}")
 SIX_DP = Decimal("0.000001")
@@ -79,8 +84,14 @@ class PsxDataApiClient:
         session: requests.Session | None = None,
         sleep: Callable[[float], None] | None = None,
         backoff_base_seconds: float = 2.0,
+        session_final_after: dt_time | None = None,
+        clock: Callable[[], datetime] | None = None,
     ) -> None:
         self._base_url = base_url.rstrip("/")
+        # Before this PSX-local time, today's bar is an in-progress session: it is skipped (and picked up by
+        # the next sync's overlap window once final). None = accept today's bar at any time.
+        self._final_after = session_final_after
+        self._clock = clock or utcnow
         self._timeout = (CONNECT_TIMEOUT_SECONDS, timeout_seconds)
         self._max_attempts = max_attempts
         self._session = session or _session_factory()
@@ -89,8 +100,17 @@ class PsxDataApiClient:
 
     @classmethod
     def from_config(cls, config: Mapping[str, Any], **kwargs: Any) -> PsxDataApiClient:
+        kwargs.setdefault("session_final_after", time_of_day(config.get("PSXDATA_SESSION_FINAL_TIME") or "17:00"))
         return cls(base_url=config["PSXDATA_API_URL"], timeout_seconds=config["PSXDATA_TIMEOUT_SECONDS"],
                    max_attempts=config["PSXDATA_MAX_ATTEMPTS"], **kwargs)
+
+    def final_through(self) -> date:
+        """Latest session date whose bar is final (yesterday while today's session may still be trading)."""
+        now = self._clock()
+        today = psx_local_date(now)
+        if self._final_after is not None and now.astimezone(PSX_TZ).time() < self._final_after:
+            return today - timedelta(days=1)
+        return today
 
     def __repr__(self) -> str:
         return f"PsxDataApiClient(base_url={self._base_url!r})"
@@ -103,7 +123,13 @@ class PsxDataApiClient:
         rows = body.get("data")
         if not isinstance(rows, list):
             raise ProviderResponseError(f"`data` is {type(rows).__name__}, expected a list", metadata=meta)
-        observations, rejected = normalize_daily_bars(symbol, rows, today=psx_local_date(utcnow()))
+        final = self.final_through()
+        in_progress = [r for r in rows if isinstance(r, dict) and str(r.get("date", ""))[:10] > final.isoformat()
+                       and str(r.get("date", ""))[:10] <= psx_local_date(self._clock()).isoformat()]
+        if in_progress:
+            rows = [r for r in rows if r not in in_progress]
+            meta["in_progress_session_skipped"] = [str(r.get("date"))[:10] for r in in_progress]
+        observations, rejected = normalize_daily_bars(symbol, rows, today=psx_local_date(self._clock()))
         return FetchResult(observations=observations, rejected=rejected, received=len(rows),
                            provider_cached=_cached(body), metadata=meta)
 

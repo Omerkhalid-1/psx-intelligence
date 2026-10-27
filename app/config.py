@@ -144,6 +144,8 @@ class BaseConfig:
         self.PSXDATA_INCREMENTAL_OVERLAP_DAYS = _int("PSXDATA_INCREMENTAL_OVERLAP_DAYS", 10)
         # Scheduled daily-bar sync time (PSX local time, Mon-Fri), after the market closes.
         self.PSXDATA_DAILY_SYNC_TIME = os.environ.get("PSXDATA_DAILY_SYNC_TIME", "18:00")
+        # PSX-local time after which today's daily bar is final. Earlier syncs skip today's in-progress bar.
+        self.PSXDATA_SESSION_FINAL_TIME = os.environ.get("PSXDATA_SESSION_FINAL_TIME", "17:00")
         self.PSXDATA_QUOTE_POLL_INTERVAL_MINUTES = _int("PSXDATA_QUOTE_POLL_INTERVAL_MINUTES", 15)
         # PSX-local window (Mon-Fri) for scheduled quote polls; manual syncs ignore it.
         self.PSXDATA_QUOTE_WINDOW = os.environ.get("PSXDATA_QUOTE_WINDOW", "09:15-17:00")
@@ -216,6 +218,7 @@ class BaseConfig:
             except ValueError as exc:
                 raise ConfigError("PSXDATA_BACKFILL_START must be YYYY-MM-DD") from exc
         parse_clock("PSXDATA_DAILY_SYNC_TIME", self.PSXDATA_DAILY_SYNC_TIME)
+        parse_clock("PSXDATA_SESSION_FINAL_TIME", self.PSXDATA_SESSION_FINAL_TIME)
         parse_clock("RESEARCH_PIPELINE_TIME", self.RESEARCH_PIPELINE_TIME)
         if self.NEWS_SENTIMENT_MODEL not in {"lexicon_v1", "phrasebank_lr_v1", "finbert"}:
             raise ConfigError("NEWS_SENTIMENT_MODEL must be lexicon_v1, phrasebank_lr_v1 or finbert")
